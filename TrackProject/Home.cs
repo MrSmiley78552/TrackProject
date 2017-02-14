@@ -134,7 +134,42 @@ namespace TrackProject
 
         private void athletesListView_MouseClick(object sender, MouseEventArgs e)
         {
-            MessageBox.Show("HI: " + athletesListView.SelectedItems[0].Text);
+            string[] splitNames = athletesListView.SelectedItems[0].Text.Split(' ');
+
+            int aIdFromDatabase = getAIDFromDatabase(splitNames[0], splitNames[1]);
+
+            MessageBox.Show("HI: " + athletesListView.SelectedItems[0].Text + "   AID: " + aIdFromDatabase);
+        }
+
+        private int getAIDFromDatabase(string fName, string lName)
+        {
+            SqlCommand cmd;
+            SqlConnection con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True");
+            con.Open();
+            SqlDataReader sqlReader;
+            cmd = new SqlCommand();
+            cmd.CommandText = "SELECT aId FROM Athlete WHERE fName = @fName AND lName = @lName";
+            cmd.Parameters.AddWithValue("@fName", fName);
+            cmd.Parameters.AddWithValue("@lName", lName);
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = con;
+
+            sqlReader = cmd.ExecuteReader();
+            if (sqlReader.HasRows)
+            {
+                while (sqlReader.Read())
+                {
+                    int aIdFromDatabase = sqlReader.GetInt32(0);
+                    sqlReader.Close();
+                    return aIdFromDatabase;
+                }
+            }
+            else
+            {
+                sqlReader.Close();
+                return -1;
+            }
+            return -1;
         }
     }
 }
