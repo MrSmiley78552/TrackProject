@@ -1,0 +1,1162 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
+using System.Data.Sql;
+using System.Data.SqlClient;
+using System.Text.RegularExpressions;
+using System.IO;
+using System.Diagnostics;
+using System.Net;
+
+namespace TrackProject
+{
+    public partial class Form1 : Form
+    {
+        SqlCommand cmd;
+        SqlConnection con;
+        SqlDataAdapter da;
+
+        
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        string trackOrFieldEvent = "";
+        string fName, lName;
+        int year;
+        int place = -1;
+        string[] individualRunningEvents = {    "60 Meter Hurdles", "60 Meter Dash", "1600 Meter Run", "400 Meter Dash",
+                                                "800 Meter Run", "200 Meter Dash", "3200 Meter Run" , "300 Meter Hurdles", "100 Meter Dash"};
+        string[] relayRunningEvents = { "4x800 Meter Relay", "4x100 Meter Relay", "4x200 Meter Relay", "4x400 Meter Relay" };
+        string[] fieldEvents = {"High Jump", "Pole Vault", "Long Jump", "Triple Jump", "Shot Put", "Discus", "Javelin" };
+        string[] teamEvents = { "Team Rankings" };
+        string dateOfMeet = "";
+        string meetName = "";
+        string time, distance;
+        int schoolNameLengthFlag = 0;
+        string[] possibleColumnKeyWords = { "Name", "Yr", "School", "Seed", "Finals", "Team", "Relay", "Points", "H#", "Prelims" };
+        string[] currentColumnKeyWords;
+        int booleanIfFinals = -1; //0 means false---1 means true
+        int numberOfPages;
+        string fileForTemporaryPDFs = @"C:\Users\Mitchell\Desktop\TrackProject\tempFileForMultiColumnPDFs.txt";
+        Boolean areThereColumns = false;
+        string[] memberSchools;
+        string schoolName;
+
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //sets up the connection to the database
+            con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True");
+            con.Open();
+
+            //sets up the pdfreader
+            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
+            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
+            //WORKS --- PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
+            PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
+            //Has trouble with the relays --- PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
+            //WORKS --- PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
+            numberOfPages = reader.NumberOfPages;
+            string text = PdfTextExtractor.GetTextFromPage(reader, 1, new LocationTextExtractionStrategy());
+            string[] linesOnPage;
+            string line;
+            //splits the page by each new line
+            linesOnPage = text.Split('\n');
+
+            //cycles through each line in the page
+            for (int lineNumber = 0; lineNumber < 5; lineNumber++)
+            {
+                //returns a single line of text
+                line = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(linesOnPage[lineNumber]));
+
+                //----------------------------------------------------------------------------------------
+                //want to put majority of code here
+                //----------------------------------------------------------------------------------------
+
+                autoSetDateOfMeet(lineNumber, line, linesOnPage);
+                autoSetNameOfMeet(lineNumber, line);
+            }
+
+            //checks if the pdf contains 2 columns
+            if (autoCheckForTwoColumns(reader) == true)
+            {
+                //the document has 2 columns
+
+                //clear the temp file
+                File.WriteAllText(fileForTemporaryPDFs, String.Empty);
+
+                //orgnaizes the two column pdf into a single column text document
+                organizeTwoColumnsIntoOneColumn(reader);
+
+
+                //data is stored in a text file now, so figure out how to use the methods I currently have to parse through that information__________________________________________________________
+                string[] lines = System.IO.File.ReadAllLines(fileForTemporaryPDFs);
+                for(int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
+                {
+                    autoSetColumnCount(lineNumber, lines[lineNumber], lines);
+
+
+                    //sets  trackOrFieldEvent  to the type in the line
+                    autoSetEventType(lines[lineNumber]);
+
+                    //will skip the team rankings
+                    if (!trackOrFieldEvent.Equals("Team Rankings"))
+                    {
+                        if (!trackOrFieldEvent.Equals(""))
+                            determineIfRelayOrSingleEvent(lines[lineNumber], lineNumber, lines);
+                    }
+                }
+            }
+            else
+            {
+                //the document has 1 column
+
+                //handles all operations on the single column pdf
+                autoHandleSingleColumnPDF(reader);
+            }
+            con.Close();
+        }
+
+        private void autoHandleSingleColumnPDF(PdfReader reader)
+        {
+            string[] pageLines;
+            string line;
+
+            //cycles through each page of the pdf
+            for (int page = 1; page <= numberOfPages; page++)
+            {
+                string text = PdfTextExtractor.GetTextFromPage(reader, page, new LocationTextExtractionStrategy());
+
+                //splits the page by each new line
+                pageLines = text.Split('\n');
+
+                //cycles through each line in the page
+                for (int lineNumber = 0, len = pageLines.Length; lineNumber < len; lineNumber++)
+                {
+                    //returns a single line of text
+                    line = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(pageLines[lineNumber]));
+
+
+
+
+                    //----------------------------------------------------------------------------------------
+                    //want to put majority of code here
+                    //----------------------------------------------------------------------------------------
+
+                    autoSetDateOfMeet(lineNumber, line, pageLines);
+                    autoSetNameOfMeet(lineNumber, line);
+
+
+
+                    //sets  trackOrFieldEvent  to the type in the line
+                    if (!trackOrFieldEvent.Equals(autoSetEventType(line)))
+                    {
+                        currentColumnKeyWords = new string[0];
+                    }
+                    trackOrFieldEvent = autoSetEventType(line);
+                    autoSetColumnCount(lineNumber, line, pageLines);
+
+                    //will skip the team rankings
+                    if (!trackOrFieldEvent.Equals("Team Rankings"))
+                    {
+                        if (!trackOrFieldEvent.Equals(""))
+                            determineIfRelayOrSingleEvent(line, lineNumber, pageLines);
+                    }
+                }
+            }
+        }
+
+        //creates a rectangle in the center of the page, which is checked to see if it contains text in it
+        //if there is text in the rectangle, then the document is all a single column
+        //if no text in the rectangle, then the document has two columns
+        private Boolean autoCheckForTwoColumns(PdfReader reader)
+        {
+            var centerRect = new iTextSharp.text.Rectangle(296, 0, 301, 600);
+            var renderFilter = new RenderFilter[1];
+            renderFilter[0] = new RegionTextRenderFilter(centerRect);
+            var textExtractionStrategy = new FilteredTextRenderListener(new LocationTextExtractionStrategy(), renderFilter);
+            var centerColumn = PdfTextExtractor.GetTextFromPage(reader, 1, textExtractionStrategy);
+            
+            if (centerColumn.Equals(""))
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+        private void organizeTwoColumnsIntoOneColumn(PdfReader reader)
+        {
+            StreamWriter fileWriter = new StreamWriter(fileForTemporaryPDFs);
+
+            for (int currentPage = 1; currentPage <= numberOfPages; currentPage++)
+            {
+                string[] leftColumn = getLeftColumn(reader, currentPage);
+                foreach (string row in leftColumn)
+                {
+                    fileWriter.WriteLine(row);
+                }
+                string[] rightColumn = getRightColumn(reader, currentPage);
+                foreach (string row in rightColumn)
+                {
+                    fileWriter.WriteLine(row);
+                }
+            }
+            fileWriter.Close();
+            areThereColumns = true;
+        }
+         
+        private string[] getLeftColumn(PdfReader reader, int page)
+        {
+            var renderFilter = new RenderFilter[1];
+            var textExtractionStrategy = new FilteredTextRenderListener(new LocationTextExtractionStrategy(), renderFilter);
+            var leftRect = new iTextSharp.text.Rectangle(0, 0, 296, 690);
+            renderFilter[0] = new RegionTextRenderFilter(leftRect);
+            var leftColumn = PdfTextExtractor.GetTextFromPage(reader, page, textExtractionStrategy);
+            string[] leftColumnArray = leftColumn.Split('\n');
+            return leftColumnArray;
+        }
+        private string[] getRightColumn(PdfReader reader, int page)
+        {
+            var renderFilter = new RenderFilter[1];
+            var textExtractionStrategy = new FilteredTextRenderListener(new LocationTextExtractionStrategy(), renderFilter);
+            var rightRect = new iTextSharp.text.Rectangle(305, 0, 702, 690);
+            renderFilter[0] = new RegionTextRenderFilter(rightRect);
+            var rightColumn = PdfTextExtractor.GetTextFromPage(reader, page, textExtractionStrategy);
+            string[] rightColumnArray = rightColumn.Split('\n');
+            return rightColumnArray;
+        }
+
+        //checks how many columns for the event
+        private void autoSetColumnCount(int j, string line, string [] words)
+        {
+            if (line.Equals("Finals") || line.Equals("Preliminaries"))
+            {
+                if (line.Equals("Finals"))
+                    booleanIfFinals = 1;
+                else
+                    booleanIfFinals = 0;
+
+                string columnCountLine = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(words[j - 1]));
+                currentColumnKeyWords = countKeyWords(columnCountLine);
+            }
+        }
+        private void autoSetNameOfMeet(int j, string line)
+        {
+            if(j == 1)
+            {
+                int  indexOfHyphen = line.IndexOf('-');
+                if (indexOfHyphen == -1)
+                    indexOfHyphen = line.Length;
+                meetName = line.Substring(0, indexOfHyphen);
+            }
+        }
+
+        //gets the date of the meet... first checks the title lines... if no date in the title lines
+        //then checks the document header
+        private void autoSetDateOfMeet(int j, string line, string [] words)
+        {
+            if (dateOfMeet.Equals("") && j >= 1)
+            {
+                Regex rgx = new Regex(@"\d{2}/\d{2}/\d{4}");
+                Match mat = rgx.Match(line);
+                dateOfMeet = mat.ToString();
+                if (dateOfMeet.Equals(""))
+                {
+                    Regex rgx2 = new Regex(@"\d{1}/\d{2}/\d{4}");
+                    Match mat2 = rgx2.Match(line);
+                    dateOfMeet = mat2.ToString();
+                }
+                if (dateOfMeet.Equals(""))
+                {
+                    Regex rgx3 = new Regex(@"\d{1}/\d{1}/\d{4}");
+                    Match mat3 = rgx3.Match(line);
+                    dateOfMeet = mat3.ToString();
+                }
+
+                if (j > 3)
+                {
+                    string headerLine = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(words[0]));
+
+                    rgx = new Regex(@"\d{2}/\d{2}/\d{4}");
+                    mat = rgx.Match(headerLine);
+                    dateOfMeet = mat.ToString();
+                    if (dateOfMeet.Equals(""))
+                    {
+                        Regex rgx2 = new Regex(@"\d{1}/\d{2}/\d{4}");
+                        Match mat2 = rgx2.Match(headerLine);
+                        dateOfMeet = mat2.ToString();
+                    }
+                    if (dateOfMeet.Equals(""))
+                    {
+                        Regex rgx3 = new Regex(@"\d{1}/\d{1}/\d{4}");
+                        Match mat3 = rgx3.Match(headerLine);
+                        dateOfMeet = mat3.ToString();
+                    }
+                }
+            }
+        }
+
+        //checks if the event
+        private void determineIfRelayOrSingleEvent(string line, int j, string[] words)
+        {
+            //determines what kind of check to do
+            if (trackOrFieldEvent.Contains("Relay"))
+            {
+                if (memberOfWhichSchool(line, memberSchools, j))
+                {
+                    relayEvents(line, j, words);
+                }
+            }
+            else
+            {
+                if(memberOfWhichSchool(line, memberSchools, j))
+                {
+                    singleEvents(line);
+                }
+            }
+        }
+
+        //checks if the line contains a member of Fargo Davies
+        //if the line does, then the method returns true
+        //if the line does not, then the method returns false
+        private Boolean memberOfWhichSchool(string line, string [] memberSchools, int pageLineNumber)
+        {
+            //if(line.Contains("Mackenzie"))
+            //{
+
+            //}
+            //string shortenedSchoolName;
+            //if (pageLineNumber > 4 && currentColumnKeyWords.Length != 0)
+            //{
+            //    foreach (var school in memberSchools)
+            //    {
+            //        try
+            //        {
+            //            if (line.Contains(school) && !school.Equals("St"))
+            //            {
+            //                schoolName = school;
+            //                schoolNameLengthFlag = school.Split(' ').Length - 1;
+            //                return true;
+            //            }
+            //            else
+            //            {
+            //                shortenedSchoolName = school.Substring(0, school.Length - 1);
+            //                if (!school.Equals("St") && line.Contains(shortenedSchoolName))
+            //                {
+            //                    schoolName = school;
+            //                    schoolNameLengthFlag = shortenedSchoolName.Split(' ').Length - 1;
+            //                    return true;
+            //                }
+            //            }
+            //        }
+            //        catch(Exception e)
+            //        {
+
+            //        }
+                    
+            //    }
+                if (line.Contains("Fargo Davies High School"))
+                {
+                    schoolName = "Fargo Davies High School";
+                    schoolNameLengthFlag = 4;
+                    return true;
+                }
+                else if (line.Contains("Fargo Davies"))
+                {
+                    schoolName = "Fargo Davies High School";
+                    schoolNameLengthFlag = 2;
+                    return true;
+                }
+                return false;
+            //}
+            //return false;
+        }
+
+        //checks if the athlete is in the database and returns their aId
+        //will return  -1  if athlete is not in database
+        private int checkIfAthleteInDatabase(string fName, string lName, int year, string schoolName)
+        {
+            SqlDataReader sqlReader;
+            cmd = new SqlCommand();
+            cmd.CommandText = "SELECT aId FROM Athlete WHERE fName = @fName AND lName = @lName AND year = @year AND schoolName = @schoolName";
+            cmd.Parameters.AddWithValue("@fName", fName);
+            cmd.Parameters.AddWithValue("@lName", lName);
+            cmd.Parameters.AddWithValue("@year", year);
+            cmd.Parameters.AddWithValue("@schoolName", schoolName);
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = con;
+
+            sqlReader = cmd.ExecuteReader();
+            if (sqlReader.HasRows)
+            {
+                while (sqlReader.Read())
+                {
+                        int aIdFromDatabase = sqlReader.GetInt32(0);
+                        sqlReader.Close();
+                        return aIdFromDatabase;
+                }
+            }
+            else
+            {
+                sqlReader.Close();
+                return -1;
+            }
+            return -1;
+        }
+
+        private int checkIfMeetInDatabase(string meetName, string date)
+        {
+            SqlDataReader sqlReader;
+            cmd = new SqlCommand();
+            cmd.CommandText = "SELECT mId FROM Meet WHERE meetName = @meetName AND date = @date";
+            cmd.Parameters.AddWithValue("@meetName", meetName);
+            cmd.Parameters.AddWithValue("@date", date);
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = con;
+
+            sqlReader = cmd.ExecuteReader();
+            if (sqlReader.HasRows)
+            {
+                while (sqlReader.Read())
+                {
+                    int mIdFromDatabase;
+                    mIdFromDatabase = sqlReader.GetInt32(0);
+                    sqlReader.Close();
+                    return mIdFromDatabase;
+                }
+            }
+            else
+            {
+                sqlReader.Close();
+                return -1;
+            }
+            return -1;
+        }
+
+        //gets the data from a relay for relay events
+        private void relayEvents(string line, int lineNumber, string [] lines)
+        {
+            string distance = "";
+            string time = "";
+            string[] currentLine = line.Split(' ');
+            string nextLine = ""; 
+            string nextLine2 = "";
+            int positionOfNames = 0;
+            Boolean nextLine2Exists = true;
+            int relayFlag = 0;
+            int seedFlag = 0;
+            int escapeFlag = 0;
+
+            Regex rgx = new Regex(@"\d{4}");
+            Match mat = rgx.Match(line);
+            string possibleDateInLine = mat.ToString();
+
+            //checks to make sure there isn't a year in the result
+            //this helps for the state meet, where they list previous records
+            if (possibleDateInLine.Equals(""))
+            {
+                place = Convert.ToInt32(currentLine[0]);
+                
+                //sets the time achieved by the relay team
+                if (areThereColumns == false)
+                {
+                    if (currentColumnKeyWords.Contains("Relay"))
+                        relayFlag = 1;
+                    if (currentColumnKeyWords.Contains("Seed"))
+                        seedFlag = 1;
+                    int indexOfBlank = -1;
+                    while(currentLine.Contains("") && escapeFlag < 15)
+                    {
+                        for (int i = 0; i < currentLine.Length - 1; i++)
+                        {
+                            if (currentLine[i].Equals("") && i > 0)
+                            {
+                                indexOfBlank = i;
+                                break;
+                            }
+                        }
+                        if (indexOfBlank != 0)
+                        {
+                            for (int k = indexOfBlank; k < currentLine.Length - 1; k++)
+                            {
+                                currentLine[k] = currentLine[k + 1];
+                            }
+                        }
+                        escapeFlag++;   
+                    }
+
+                    if(currentLine.Contains("A") || currentLine.Contains("B") || currentLine.Contains("C"))
+                    {
+                        time = currentLine[1 + schoolNameLengthFlag + relayFlag + seedFlag];
+                        if(time.Equals(""))
+                            time = currentLine[1 + schoolNameLengthFlag + relayFlag + seedFlag - 1];
+                    }
+                    else
+                    {
+                        time = currentLine[1 + schoolNameLengthFlag + seedFlag];
+                        if(time.Equals(""))
+                            time =currentLine[1 + schoolNameLengthFlag + seedFlag - 1];
+                    }
+
+                    //time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length];
+                    if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") ||
+                        time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
+                        time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 1];
+                }
+                else
+                {
+                    time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 2];
+                    if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") ||
+                        time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
+                        time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 3];
+                }
+                time = trimTimeOrDistance(time);
+
+                if (areThereColumns == true)
+                {
+                    nextLine = lines[lineNumber + 1];
+                    nextLine2 = lines[lineNumber + 2];
+                    nextLine2Exists = true;
+                }
+                else
+                {
+                    nextLine = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(lines[lineNumber + 1]));
+                    try
+                    {
+                        nextLine2 = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(lines[lineNumber + 2]));
+                    }
+                    catch (Exception e)
+                    {
+                        nextLine2Exists = false;
+                    }
+                }
+                if (nextLine2Exists == true && nextLine2.Contains("3)"))
+                {
+                    int nameLengthFlag = 0;
+                    int yearMissingFlag = 0;
+                    string[] nextLineArray = nextLine.Split(' ');
+                    string[] nextLine2Array = nextLine2.Split(' ');
+                    //if this is true, then the lName comes before the fName in the    lName, fName   format
+                    if (nextLineArray[1].Contains(','))
+                    {
+                        positionOfNames = 1;
+                    }
+                    //first athlete
+                    lName = nextLineArray[2 - positionOfNames].Replace(",", "");
+                    fName = nextLineArray[1 + positionOfNames];
+                    //this will test if the name is longer by trying to convert the next position to an int.
+                    //if the name is confirmed to be only 2 long, it will do nothing
+                    try
+                    {
+                        year = Convert.ToInt32(nextLineArray[3]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (nextLineArray[3].Contains(")"))
+                        {
+                            year = 0;
+                            yearMissingFlag = 1;
+                        }
+                        else
+                        {
+                            nameLengthFlag = 1;
+                            fName = nextLineArray[2] + nextLineArray[3];
+                            if (fName.Contains(','))
+                                fName = fName.Substring(0, fName.Length - 1);
+                            year = Convert.ToInt32(nextLineArray[3 + nameLengthFlag]);
+                        }
+                    }
+                    nameLengthFlag = 0;
+                    //add to sql
+                    int aId = handleAthlete(fName, lName, year, schoolName);
+                    int mId = handleMeet();
+                    handleRecord(time, distance, aId, mId, booleanIfFinals);
+                    //------------------------------------------------
+                    //second athlete
+                    lName = nextLineArray[6 - positionOfNames - yearMissingFlag].Replace(",", "");
+                    fName = nextLineArray[5 + positionOfNames - yearMissingFlag];
+                    try
+                    {
+                        year = Convert.ToInt32(nextLineArray[7 - yearMissingFlag]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (nextLineArray[7 - yearMissingFlag].Contains(")"))
+                            year = 0;
+                        else
+                        {
+                            nameLengthFlag += 1;
+                            fName = nextLineArray[6 - yearMissingFlag] + nextLineArray[7 - yearMissingFlag];
+                            if (fName.Contains(','))
+                                fName = fName.Substring(0, fName.Length - 1);
+                            year = Convert.ToInt32(nextLineArray[7 + nameLengthFlag - yearMissingFlag]);
+                        }
+                    }
+                    nameLengthFlag = 0;
+                    //add to sql
+                    aId = handleAthlete(fName, lName, year, schoolName);
+                    mId = handleMeet();
+                    handleRecord(time, distance, aId, mId, booleanIfFinals);
+                    //------------------------------------------------
+                    //third athlete
+                    yearMissingFlag = 0; //since we are moving to a new row
+                    lName = nextLine2Array[2 - positionOfNames].Replace(",", "");
+                    fName = nextLine2Array[1 + positionOfNames];
+                    try
+                    {
+                        year = Convert.ToInt32(nextLine2Array[3]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (nextLine2Array[3].Contains(")"))
+                        {
+                            year = 0;
+                            yearMissingFlag = 1;
+                        }
+                        else
+                        {
+                            nameLengthFlag = 1;
+                            fName = nextLine2Array[2] + nextLine2Array[3];
+                            if (fName.Contains(','))
+                                fName = fName.Substring(0, fName.Length - 1);
+                            year = Convert.ToInt32(nextLine2Array[3 + nameLengthFlag]);
+                        }
+                    }
+                    nameLengthFlag = 0;
+                    //add to sql
+                    aId = handleAthlete(fName, lName, year, schoolName);
+                    mId = handleMeet();
+                    handleRecord(time, distance, aId, mId, booleanIfFinals);
+                    //------------------------------------------------
+                    //fourth athlete
+                    lName = nextLine2Array[6 - positionOfNames - yearMissingFlag].Replace(",", "");
+                    fName = nextLine2Array[5 + positionOfNames - yearMissingFlag];
+                    try
+                    {
+                        year = Convert.ToInt32(nextLine2Array[7 - yearMissingFlag]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (nextLine2Array[7 - yearMissingFlag].Contains(")"))
+                        {
+                            year = 0;
+                            yearMissingFlag += 1;
+                        }
+                        else
+                        {
+                            nameLengthFlag = 1;
+                            fName = nextLine2Array[6 - yearMissingFlag] + nextLine2Array[7 - yearMissingFlag];
+                            if (fName.Contains(','))
+                                fName = fName.Substring(0, fName.Length - 1);
+                            year = Convert.ToInt32(nextLine2Array[7 + nameLengthFlag - yearMissingFlag]);
+                        }
+                    }
+                    nameLengthFlag = 0;
+                    //add to sql
+                    aId = handleAthlete(fName, lName, year, schoolName);
+                    mId = handleMeet();
+                    handleRecord(time, distance, aId, mId, booleanIfFinals);
+                    yearMissingFlag = 0;
+                }
+                else
+                {
+                    int yearMissingFlag = 0;
+                    string[] nextLineArray = nextLine.Split(' ');
+                    int nameLengthFlag = 0;
+
+                    //if this is true, then the lName comes before the fName in the    lName, fName   format
+                    if (nextLineArray[1].Contains(','))
+                    {
+                        positionOfNames = 1;
+                    }
+
+                    //first athlete
+                    lName = nextLineArray[2 - positionOfNames].Replace(",", "");
+                    fName = nextLineArray[1 + positionOfNames];
+                    try
+                    {
+                        year = Convert.ToInt32(nextLineArray[3]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (nextLineArray[3].Contains(")"))
+                        {
+                            year = 0;
+                            yearMissingFlag = 1;
+                        }
+                        else
+                        {
+                            nameLengthFlag = 1;
+                            fName = nextLineArray[2] + nextLineArray[3];
+                            if (fName.Contains(','))
+                                fName = fName.Substring(0, fName.Length - 1);
+                            year = Convert.ToInt32(nextLineArray[3 + nameLengthFlag]);
+                        }
+                    }
+                    nameLengthFlag = 0;
+                    //add to sql
+                    int aId = handleAthlete(fName, lName, year, schoolName);
+                    int mId = handleMeet();
+                    handleRecord(time, distance, aId, mId, booleanIfFinals);
+                    //------------------------------------------------
+                    //second athlete
+                    lName = nextLineArray[6 - positionOfNames - yearMissingFlag].Replace(",", "");
+                    fName = nextLineArray[5 + positionOfNames - yearMissingFlag];
+                    try
+                    {
+                        year = Convert.ToInt32(nextLineArray[7 - yearMissingFlag]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (nextLineArray[7 - yearMissingFlag].Contains(")"))
+                        {
+                            year = 0;
+                            yearMissingFlag += 1;
+                        }
+                        else
+                        {
+                            nameLengthFlag = 1;
+                            fName = nextLineArray[6 - yearMissingFlag] + nextLineArray[7 - yearMissingFlag];
+                            if (fName.Contains(','))
+                                fName = fName.Substring(0, fName.Length - 1);
+                            year = Convert.ToInt32(nextLineArray[7 + nameLengthFlag - yearMissingFlag]);
+                        }
+                    }
+                    nameLengthFlag = 0;
+                    //add to sql
+                    aId = handleAthlete(fName, lName, year, schoolName);
+                    mId = handleMeet();
+                    handleRecord(time, distance, aId, mId, booleanIfFinals);
+                    //------------------------------------------------
+                    //third athlete
+                    lName = nextLineArray[10 - positionOfNames - yearMissingFlag].Replace(",", "");
+                    fName = nextLineArray[9 + positionOfNames - yearMissingFlag];
+                    try
+                    {
+                        year = Convert.ToInt32(nextLineArray[11 - yearMissingFlag]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (nextLineArray[11 - yearMissingFlag].Contains(")"))
+                        {
+                            year = 0;
+                            yearMissingFlag += 1;
+                        }
+                        else
+                        {
+                            nameLengthFlag = 1;
+                            fName = nextLineArray[10 - yearMissingFlag] + nextLineArray[11 - yearMissingFlag];
+                            if (fName.Contains(','))
+                                fName = fName.Substring(0, fName.Length - 1);
+                            year = Convert.ToInt32(nextLineArray[11 + nameLengthFlag - yearMissingFlag]);
+                        }
+                    }
+                    nameLengthFlag = 0;
+                    //add to sql
+                    aId = handleAthlete(fName, lName, year, schoolName);
+                    mId = handleMeet();
+                    handleRecord(time, distance, aId, mId, booleanIfFinals);
+                    //------------------------------------------------
+                    //fourth athlete
+                    lName = nextLineArray[14 - positionOfNames - yearMissingFlag].Replace(",", "");
+                    fName = nextLineArray[13 + positionOfNames - yearMissingFlag];
+                    try
+                    {
+                        year = Convert.ToInt32(nextLineArray[15 - yearMissingFlag]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (nextLineArray[15 - yearMissingFlag].Contains(")"))
+                        {
+                            year = 0;
+                            yearMissingFlag += 1;
+                        }
+                        else
+                        {
+                            nameLengthFlag = 1;
+                            fName = nextLineArray[14 - yearMissingFlag] + nextLineArray[15 - yearMissingFlag];
+                            if (fName.Contains(','))
+                                fName = fName.Substring(0, fName.Length - 1);
+                            year = Convert.ToInt32(nextLineArray[15 + nameLengthFlag - yearMissingFlag]);
+                        }
+                    }
+                    nameLengthFlag = 0;
+                    //add to sql
+                    aId = handleAthlete(fName, lName, year, schoolName);
+                    mId = handleMeet();
+                    handleRecord(time, distance, aId, mId, booleanIfFinals);
+                }
+            }
+                
+                    //figure out how to store the captured information, so that a user can enter the athlete's names later
+                    //problem originally arose from the 2015 EDC Results
+        }
+
+        //gets the data from a line for single events
+        private void singleEvents(string line)
+        {
+            distance = "";
+            time = "";
+            int nameLengthFlag = 0;
+            int yearLengthFlag = 0;
+            int seedLengthFlag = 0;
+            int prelimsLengthFlag = 0;
+            int finalsLengthFlag = 0;
+            string[] temp = line.Split(' ');
+            string[] temp2 = new string[temp.Length - 1];
+            int indexOfBlank = 0;
+            for(int i = 0; i < temp.Length -1; i++)
+            {
+                if (temp[i].Equals("") && i > 0)
+                {
+                    indexOfBlank = i;
+                    break;
+                }
+            }
+            if(indexOfBlank != 0)
+            {
+                for (int k = indexOfBlank; k < temp.Length - 1; k++)
+                {
+                    temp[k] = temp[k+1];
+                }
+            }
+
+            //sets the place the athlete got
+            try
+            {
+                place = Convert.ToInt32(temp[0]);
+            }catch(Exception e)
+            {
+                place = -1;
+            }
+
+            //checks for Name and it's length
+            if (currentColumnKeyWords.Contains("Name"))
+            {
+                int nameFormat = -1;
+                //checks for a   lName, fName   format
+                if(temp[1].Contains(','))
+                {
+                    lName = temp[1].Substring(0, (temp[1].Length - 1));
+                    fName = temp[2];
+                    nameLengthFlag = 2;
+                    nameFormat = 0;
+                }
+                //works for a   fName lName   format
+                else
+                {
+                    fName = temp[1];
+                    lName = temp[2];
+                    nameLengthFlag = 2;
+                    nameFormat = 1;
+                }
+                //this will test if the name is longer by trying to convert the next position to an int.
+                //if the name is confirmed to be only 2 long, it will do nothing
+                try
+                {
+                    int testIfLongName = Convert.ToInt32(temp[3]);
+                }
+                catch (Exception e)
+                {
+                    if(temp[2].Contains(','))
+                    {
+                        lName = temp[1] + temp[2];
+                        lName = lName.Substring(0, lName.Length - 1);
+                        fName = temp[3];
+                    }
+                    else if(temp[1].Contains(','))
+                    {
+                        lName = temp[1];
+                        lName = lName.Substring(0, lName.Length - 1);
+                        fName = temp[2] + temp[3];
+                    }
+                    else
+                    {
+                        fName = temp[1];
+                        lName = temp[2] + temp[3];
+                    }
+                    nameLengthFlag += 1;
+                }
+            }
+            
+            //check for Yr and its length
+            if(currentColumnKeyWords.Contains("Yr"))
+            {
+                year = Convert.ToInt32(temp[1 + nameLengthFlag]);
+                yearLengthFlag = 1;
+            }
+
+
+            //already found the length of the school name in method---memberOfFargoDavies
+
+
+            if (currentColumnKeyWords.Contains("Seed"))
+                seedLengthFlag = 1;
+
+            if (currentColumnKeyWords.Contains("Prelims"))
+                prelimsLengthFlag = 1;
+
+            if (currentColumnKeyWords.Contains("Finals"))
+                finalsLengthFlag = 1;
+
+            
+
+            //checks if a track event or a field event and records the time or distance respectively
+            if (fieldEvents.Contains(trackOrFieldEvent))
+            {
+                distance = temp[ nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
+                if(distance.Equals("") || distance.Equals(" ") || distance.Equals("  ") || distance.Equals("10") || distance.Equals("8") || distance.Equals("6") ||
+                    distance.Equals("5") || distance.Equals("4") || distance.Equals("3") || distance.Equals("2") || distance.Equals("1"))
+                    distance = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
+                distance = trimTimeOrDistance(distance);
+                time = "";
+            }
+            else
+            {
+                time = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
+                if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") ||
+                    time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
+                    time = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
+                time = trimTimeOrDistance(time);
+                distance = "";
+            }
+            
+            int aId = handleAthlete(fName, lName, year, schoolName);
+            int mId = handleMeet();
+            handleRecord(time, distance, aId, mId, booleanIfFinals);
+        }
+
+        private string trimTimeOrDistance(string mark)
+        {
+            char[] lettersToCheckFor = { 'Q', 'x', 'J' };
+            foreach(var letter in lettersToCheckFor)
+            {
+                if(mark.Contains(letter))
+                {
+                    int indexOfLetter = mark.IndexOf(letter);
+                    if (letter.Equals('Q') && indexOfLetter != -1)
+                        mark = mark.Substring(0, indexOfLetter);
+                    else if (indexOfLetter != -1)
+                        mark = mark.Substring(indexOfLetter + 1, mark.Length - (indexOfLetter + 1));
+                }
+            }
+            return mark;
+        }
+
+        private void handleRecord(string time, string distance, int aId, int mId, int booleanIfFinals)
+        {
+            if (checkForDuplicateRecord(time, distance, aId, mId, booleanIfFinals) == 0)
+            {
+                //adds a record which is connected to the Athlete
+                cmd = new SqlCommand("INSERT INTO Record (time, distance, aId, mId, place, event, finals) VALUES (@time, @distance, @aId, @mId, @place, @event, @finals)", con);
+
+                cmd.Parameters.AddWithValue("@time", time);
+                cmd.Parameters.AddWithValue("@distance", distance);
+
+                cmd.Parameters.AddWithValue("@aId", aId);
+                cmd.Parameters.AddWithValue("@mId", mId);
+                cmd.Parameters.AddWithValue("@place", place);
+                cmd.Parameters.AddWithValue("@event", trackOrFieldEvent);
+                cmd.Parameters.AddWithValue("@finals", booleanIfFinals);
+                cmd.ExecuteNonQuery();
+            }
+        }
+        private int handleMeet()
+        {
+            int mId = checkIfMeetInDatabase(meetName, dateOfMeet);
+            if (mId == -1)
+            {
+                createNewMeet(meetName, dateOfMeet);
+                mId = checkIfMeetInDatabase(meetName, dateOfMeet);
+            }
+            return mId;
+        }
+        private int handleAthlete(string fName, string lName, int year, string schoolName)
+        {
+            int aId = checkIfAthleteInDatabase(fName, lName, year, schoolName);
+
+            if(aId == -1)
+            {
+                //adds the data for the athlete into the athlete database and retrieves it's aId
+                createNewAthlete(fName, lName, year, schoolName);
+
+                //sets aId to the new Athlete's id number
+                aId = checkIfAthleteInDatabase(fName, lName, year, schoolName);
+            }
+            return aId;
+        }
+
+        //returns 1 if there are duplicates
+        //returns 0 if there are no duplicates
+        private int checkForDuplicateRecord(string time, string distance, int aId, int mId, int booleanIfFinals)
+        {
+            SqlDataReader sqlReader;
+            cmd = new SqlCommand();
+            cmd.CommandText = "SELECT * FROM Record WHERE time = @time AND distance = @distance AND aId = @aId AND mId = @mId";
+            cmd.Parameters.AddWithValue("@time", time);
+            cmd.Parameters.AddWithValue("@distance", distance);
+            cmd.Parameters.AddWithValue("@aId", aId);
+            cmd.Parameters.AddWithValue("@mId", mId);
+            cmd.Parameters.AddWithValue("@finals", booleanIfFinals);
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = con;
+
+            sqlReader = cmd.ExecuteReader();
+            if (sqlReader.HasRows)
+            {
+                sqlReader.Close();
+                return 1;
+            }
+            sqlReader.Close();
+            return 0;
+        }
+
+        //creates a new athlete in the database
+        private void createNewAthlete(string fName, string lName, int year, string schoolName)
+        {
+            cmd = new SqlCommand("INSERT INTO Athlete (fName, lName, year, schoolName) VALUES (@fName, @lname, @year, @schoolName)", con);
+            cmd.Parameters.AddWithValue("@fName", fName);
+            cmd.Parameters.AddWithValue("@lName", lName);
+            cmd.Parameters.AddWithValue("@year", year);
+            cmd.Parameters.AddWithValue("@schoolName", schoolName);
+            cmd.ExecuteNonQuery();
+        }
+
+        //creates a new meet in the database
+        private void createNewMeet(string meetName, string date)
+        {
+            cmd = new SqlCommand("INSERT INTO Meet (meetName, date) VALUES (@meetName, @date)", con);
+            cmd.Parameters.AddWithValue("@meetName", meetName);
+            cmd.Parameters.AddWithValue("@date", date);         //not sure how the conversion between date to the database works
+            cmd.ExecuteNonQuery();
+        }
+
+        
+
+        //checks a line to see if it contains an event name
+        //if it does, then the method returns the event type
+        //if the line does not contain an event name, then the method returns null
+        private string autoSetEventType(string line)
+        {
+            //creates an array of all the events
+            string[] allEvents = individualRunningEvents.Concat(relayRunningEvents.Concat(fieldEvents).Concat(teamEvents)).ToArray();
+            foreach (string eventName in allEvents)
+            {
+                if (line.Contains(eventName))
+                {
+                    return eventName;
+                }
+            }
+            return trackOrFieldEvent;
+        }
+
+        //keeps track of the number of keywords in the line
+        //these keywords represent the number of columns for the records in the document
+        private string[] countKeyWords(string columnCountline)
+        {
+            List<string> keywordsList = new List<string>();
+            string[] temp = columnCountline.Split(' ');
+            foreach(string keyword in temp)
+            {
+                if (possibleColumnKeyWords.Contains(keyword))
+                {
+                    keywordsList.Add(keyword);
+                }
+            }
+            return keywordsList.ToArray();
+        }
+
+        private string[] getMemberSchools()
+        {
+            string[] fileLines;
+            string[] newfileLines;
+            int lineNumber = 0;
+
+            fileLines = File.ReadAllLines(@"C:\Users\Mitchell\Desktop\TrackProject\memberSchools.txt");
+            newfileLines = new string[fileLines.Length-2];
+
+            foreach (var line in fileLines)
+            {
+                int indexOfFirstPeriod = line.IndexOf('.');
+                if (indexOfFirstPeriod != -1 && line.ElementAt(indexOfFirstPeriod - 1).Equals(" "))
+                {
+                    newfileLines[lineNumber] = line.Substring(0, indexOfFirstPeriod - 1);
+                    lineNumber++;
+                }
+                else if (indexOfFirstPeriod != -1)
+                {
+                    newfileLines[lineNumber] = line.Substring(0, indexOfFirstPeriod);
+                    lineNumber++;
+                }
+            }
+            return newfileLines;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            
+            Home homeForm = new Home();
+            homeForm.Show();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            //InitializeComponent();
+            //string filePath = @"C:\Users\Mitchell\Desktop\TrackProject\testPerlFile.pl";
+            //ProcessStartInfo ps = new ProcessStartInfo(@"C:\Users\Mitchell\Desktop\TrackProject\testPerlFile.pl", "program.pl arg + s");
+            //ps.UseShellExecute = false;
+            //ps.RedirectStandardOutput = true;
+            //Process p = new Process();
+            //p.Start(Form1.button3_Click.filePath);
+            //string output = p.StandardOutput.ReadToEnd();
+            //p.WaitForExit();
+
+            //----------------------------works the best so far--------------------------------
+            Process myProcess = new Process();
+            myProcess.StartInfo.FileName = @"C:\\Users\\Mitchell\\Desktop\\TrackProject\\testPerlFile.pl";
+            myProcess.StartInfo.CreateNoWindow = false;
+            myProcess.Start();
+            string output = myProcess.StandardOutput.ReadToEnd();
+            myProcess.WaitForExit();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            memberSchools = getMemberSchools();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            SqlConnection con2 = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True");
+
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM Record", con2))
+            {
+                con2.Open();
+                cmd.ExecuteNonQuery();
+                con2.Close();
+            }
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM Athlete", con2))
+            {
+                con2.Open();
+                cmd.ExecuteNonQuery();
+                con2.Close();
+            }
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM Meet", con2))
+            {
+                con2.Open();
+                cmd.ExecuteNonQuery();
+                con2.Close();
+            }
+        }
+    }
+}
