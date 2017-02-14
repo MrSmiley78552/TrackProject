@@ -132,9 +132,6 @@ namespace TrackProject
             conn.Close();
         }
 
-        private void athletesListView_MouseClick(object sender, MouseEventArgs e)
-        {
-            MessageBox.Show("HI: " + athletesListView.SelectedItems[0].Text);
-        }
+        
     }
 }
