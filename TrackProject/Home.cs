@@ -138,6 +138,35 @@ namespace TrackProject
 
             int aIdFromDatabase = getAIDFromDatabase(splitNames[0], splitNames[1]);
 
+            //--------------------------------------------------------
+            SqlDataReader sqlReader;
+            string ssConnectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True";
+            SqlConnection conn = new SqlConnection(ssConnectionString);
+            conn.Open();
+            SqlCommand command = conn.CreateCommand();
+            command.CommandText = "SELECT * FROM Record WHERE aId = @aId";
+            command.Parameters.AddWithValue("@aId", aIdFromDatabase);
+            command.CommandType = CommandType.Text;
+            command.Connection = conn;
+            sqlReader = command.ExecuteReader();
+            if (sqlReader.HasRows)
+            {
+                while (sqlReader.Read())
+                {
+                    int rId = sqlReader.GetInt32(0); 
+                    string time = sqlReader.GetString(1);
+                    string distance = sqlReader.GetString(2);
+                    int mId = sqlReader.GetInt32(4);
+                    int place = sqlReader.GetInt32(5);
+                    string trackEvent = sqlReader.GetString(6);
+                    int finals = sqlReader.GetInt32(7);
+                }
+                sqlReader.Close();
+            }
+            sqlReader.Close();
+            conn.Close();
+            //--------------------------------------------------------
+
             MessageBox.Show("HI: " + athletesListView.SelectedItems[0].Text + "   AID: " + aIdFromDatabase);
         }
 
