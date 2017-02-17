@@ -34,7 +34,8 @@ namespace TrackProject
         int year;
         int place = -1;
         string[] individualRunningEvents = {    "60 Meter Hurdles", "60 Meter Dash", "1600 Meter Run", "400 Meter Dash",
-                                                "800 Meter Run", "200 Meter Dash", "3200 Meter Run" , "300 Meter Hurdles", "100 Meter Dash"};
+                                                "800 Meter Run", "200 Meter Dash", "3200 Meter Run" ,"100 Meter Hurdles",
+                                                "110 Meter Hurdles", "300 Meter Hurdles", "100 Meter Dash"};
         string[] relayRunningEvents = { "4x800 Meter Relay", "4x100 Meter Relay", "4x200 Meter Relay", "4x400 Meter Relay" };
         string[] fieldEvents = {"High Jump", "Pole Vault", "Long Jump", "Triple Jump", "Shot Put", "Discus", "Javelin" };
         string[] teamEvents = { "Team Rankings" };
