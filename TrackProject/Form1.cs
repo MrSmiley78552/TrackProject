@@ -24,7 +24,6 @@ namespace TrackProject
         SqlConnection con;
         SqlDataAdapter da;
 
-        
         public Form1()
         {
             InitializeComponent();

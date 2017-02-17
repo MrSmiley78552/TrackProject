@@ -16,6 +16,7 @@ namespace TrackProject
         public Home()
         {
             InitializeComponent();
+
         }
 
         public void setAllPanelsVisibleFalse()
@@ -134,6 +135,9 @@ namespace TrackProject
 
         private void athletesListView_MouseClick(object sender, MouseEventArgs e)
         {
+            //0 = rId, 1 = time, 2 = distance, 3 = mId, 4 = place, 5 = trackEvent, 6 = finals
+            string[,] results = new string[100, 7];
+            
             string[] splitNames = athletesListView.SelectedItems[0].Text.Split(' ');
 
             int aIdFromDatabase = getAIDFromDatabase(splitNames[0], splitNames[1]);
@@ -151,15 +155,17 @@ namespace TrackProject
             sqlReader = command.ExecuteReader();
             if (sqlReader.HasRows)
             {
+                int i = 0;
                 while (sqlReader.Read())
                 {
-                    int rId = sqlReader.GetInt32(0); 
-                    string time = sqlReader.GetString(1);
-                    string distance = sqlReader.GetString(2);
-                    int mId = sqlReader.GetInt32(4);
-                    int place = sqlReader.GetInt32(5);
-                    string trackEvent = sqlReader.GetString(6);
-                    int finals = sqlReader.GetInt32(7);
+                    results[i, 0] = "" + sqlReader.GetInt32(0);
+                    results[i, 1] = sqlReader.GetString(1);
+                    results[i, 2] = sqlReader.GetString(2);
+                    results[i, 3] = "" + sqlReader.GetInt32(4);
+                    results[i, 4] = "" + sqlReader.GetInt32(5);
+                    results[i, 5] = sqlReader.GetString(6);
+                    results[i, 6] = "" + sqlReader.GetInt32(7);
+                    i++;
                 }
                 sqlReader.Close();
             }
