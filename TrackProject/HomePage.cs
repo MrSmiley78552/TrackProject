@@ -16,6 +16,12 @@ namespace TrackProject
         public HomePage()
         {
             InitializeComponent();
+
+            //set initial states of panels-----------------------
+            meetsPanel.Visible = true;
+            athletePanel.Visible = false;
+            //---------------------------------------------------
+            //Load the Athletes side bar-----------------------------
             SqlDataReader sqlReader;
             string ssConnectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True";
             SqlConnection conn = new SqlConnection(ssConnectionString);
@@ -35,7 +41,30 @@ namespace TrackProject
                 sqlReader.Close();
             }
             sqlReader.Close();
-            conn.Close();
+            //---------------------------------------------------
+            //Load the meets panel-------------------------------
+            SqlDataReader sqlReader2;
+            string ssConnectionString2 = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True";
+            SqlConnection conn2 = new SqlConnection(ssConnectionString2);
+            conn2.Open();
+            SqlCommand command2 = conn2.CreateCommand();
+            command2.CommandText = "SELECT meetName, date FROM Meet";
+            command2.CommandType = CommandType.Text;
+            command2.Connection = conn2;
+            sqlReader2 = command2.ExecuteReader();
+            if (sqlReader2.HasRows)
+            {
+                while (sqlReader2.Read())
+                {
+                    var listViewItem = new ListViewItem(sqlReader2.GetString(0));
+                    meetsListView.Items.Add(listViewItem);
+                }
+                sqlReader2.Close();
+            }
+            sqlReader2.Close();
+            conn2.Close();
+            //---------------------------------------------------
+
         }
 
         private void athletesListView_MouseClick(object sender, MouseEventArgs e)
@@ -46,7 +75,8 @@ namespace TrackProject
             string[] splitNames = athletesListView.SelectedItems[0].Text.Split(' ');
 
             int aIdFromDatabase = getAIDFromDatabase(splitNames[0], splitNames[1]);
-
+            meetsPanel.Visible = false;
+            athletePanel.Visible = true;
             MessageBox.Show("HI: " + athletesListView.SelectedItems[0].Text + "   AID: " + aIdFromDatabase);
         }
 
@@ -81,7 +111,9 @@ namespace TrackProject
             return -1;
         }
 
-        
-    }
+        public void meetsListView_MouseClick(object sender, MouseEventArgs e)
+        {
 
+        }
+    }
 }

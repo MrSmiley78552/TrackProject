@@ -33,6 +33,13 @@ namespace TrackProject
             this.athletesLabel = new System.Windows.Forms.Label();
             this.athletesListView = new System.Windows.Forms.ListView();
             this.col1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.meetsPanel = new System.Windows.Forms.Panel();
+            this.meetsListView = new System.Windows.Forms.ListView();
+            this.athletePanel = new System.Windows.Forms.Panel();
+            this.athletePanelLabel = new System.Windows.Forms.Label();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.meetsPanel.SuspendLayout();
+            this.athletePanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // athletesLabel
@@ -51,6 +58,7 @@ namespace TrackProject
             this.athletesListView.Activation = System.Windows.Forms.ItemActivation.OneClick;
             this.athletesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.col1});
+            this.athletesListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.athletesListView.HotTracking = true;
             this.athletesListView.HoverSelection = true;
             this.athletesListView.Location = new System.Drawing.Point(12, 82);
@@ -65,18 +73,66 @@ namespace TrackProject
             // 
             this.col1.Name = "col1";
             this.col1.Text = "";
-            this.athletesListView.Columns[0].Width = 110;
-            athletesListView.HeaderStyle = ColumnHeaderStyle.None;
+            this.col1.Width = 150;
+            // 
+            // meetsPanel
+            // 
+            this.meetsPanel.Controls.Add(this.meetsListView);
+            this.meetsPanel.Location = new System.Drawing.Point(162, 82);
+            this.meetsPanel.Name = "meetsPanel";
+            this.meetsPanel.Size = new System.Drawing.Size(396, 318);
+            this.meetsPanel.TabIndex = 2;
+            // 
+            // meetsListView
+            // 
+            this.meetsListView.Activation = System.Windows.Forms.ItemActivation.OneClick;
+            this.meetsListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1});
+            this.meetsListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.meetsListView.HoverSelection = true;
+            this.meetsListView.Location = new System.Drawing.Point(0, 0);
+            this.meetsListView.Name = "meetsListView";
+            this.meetsListView.Size = new System.Drawing.Size(396, 318);
+            this.meetsListView.TabIndex = 0;
+            this.meetsListView.UseCompatibleStateImageBehavior = false;
+            this.meetsListView.View = System.Windows.Forms.View.Details;
+            this.meetsListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.meetsListView_MouseClick);
+            // 
+            // athletePanel
+            // 
+            this.athletePanel.Controls.Add(this.athletePanelLabel);
+            this.athletePanel.Location = new System.Drawing.Point(162, 79);
+            this.athletePanel.Name = "athletePanel";
+            this.athletePanel.Size = new System.Drawing.Size(396, 318);
+            this.athletePanel.TabIndex = 3;
+            // 
+            // athletePanelLabel
+            // 
+            this.athletePanelLabel.AutoSize = true;
+            this.athletePanelLabel.Location = new System.Drawing.Point(139, 85);
+            this.athletePanelLabel.Name = "athletePanelLabel";
+            this.athletePanelLabel.Size = new System.Drawing.Size(70, 13);
+            this.athletePanelLabel.TabIndex = 0;
+            this.athletePanelLabel.Text = "Athlete Panel";
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Width = 300;
             // 
             // HomePage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(692, 412);
+            this.Controls.Add(this.meetsPanel);
+            this.Controls.Add(this.athletePanel);
             this.Controls.Add(this.athletesListView);
             this.Controls.Add(this.athletesLabel);
             this.Name = "HomePage";
             this.Text = "HomePage";
+            this.meetsPanel.ResumeLayout(false);
+            this.athletePanel.ResumeLayout(false);
+            this.athletePanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -86,5 +142,10 @@ namespace TrackProject
         private System.Windows.Forms.Label athletesLabel;
         private System.Windows.Forms.ListView athletesListView;
         private ColumnHeader col1;
+        private Panel meetsPanel;
+        private Panel athletePanel;
+        private Label athletePanelLabel;
+        private ListView meetsListView;
+        private ColumnHeader columnHeader1;
     }
 }
