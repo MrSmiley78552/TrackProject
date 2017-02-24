@@ -1,4 +1,6 @@
-﻿namespace TrackProject
+﻿using System.Windows.Forms;
+
+namespace TrackProject
 {
     partial class HomePage
     {
@@ -30,6 +32,7 @@
         {
             this.athletesLabel = new System.Windows.Forms.Label();
             this.athletesListView = new System.Windows.Forms.ListView();
+            this.col1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // athletesLabel
@@ -46,6 +49,8 @@
             // athletesListView
             // 
             this.athletesListView.Activation = System.Windows.Forms.ItemActivation.OneClick;
+            this.athletesListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.col1});
             this.athletesListView.HotTracking = true;
             this.athletesListView.HoverSelection = true;
             this.athletesListView.Location = new System.Drawing.Point(12, 82);
@@ -53,8 +58,15 @@
             this.athletesListView.Size = new System.Drawing.Size(121, 318);
             this.athletesListView.TabIndex = 0;
             this.athletesListView.UseCompatibleStateImageBehavior = false;
-            this.athletesListView.View = System.Windows.Forms.View.List;
+            this.athletesListView.View = System.Windows.Forms.View.Details;
             this.athletesListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.athletesListView_MouseClick);
+            // 
+            // col1
+            // 
+            this.col1.Name = "col1";
+            this.col1.Text = "";
+            this.athletesListView.Columns[0].Width = 110;
+            athletesListView.HeaderStyle = ColumnHeaderStyle.None;
             // 
             // HomePage
             // 
@@ -73,5 +85,6 @@
         #endregion
         private System.Windows.Forms.Label athletesLabel;
         private System.Windows.Forms.ListView athletesListView;
+        private ColumnHeader col1;
     }
 }
