@@ -1130,6 +1130,12 @@ namespace TrackProject
             myProcess.WaitForExit();
         }
 
+        private void button5_Click(object sender, EventArgs e)
+        {
+            HomePage homePageForm = new HomePage();
+            homePageForm.Show();
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             memberSchools = getMemberSchools();

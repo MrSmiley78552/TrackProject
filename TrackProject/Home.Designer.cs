@@ -74,9 +74,9 @@
             this.homePageLabel = new System.Windows.Forms.Label();
             this.athletesButton = new System.Windows.Forms.Button();
             this.athletesHomePanel = new System.Windows.Forms.Panel();
-            this.athletesListView = new System.Windows.Forms.ListView();
             this.panel2 = new System.Windows.Forms.Panel();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.athletesListView = new System.Windows.Forms.ListView();
             this.panel1.SuspendLayout();
             this.goldenEagleAwardWinnersPanel.SuspendLayout();
             this.stateQualifierListPanel.SuspendLayout();
@@ -592,20 +592,6 @@
             this.athletesHomePanel.Size = new System.Drawing.Size(515, 439);
             this.athletesHomePanel.TabIndex = 1;
             // 
-            // athletesListView
-            // 
-            this.athletesListView.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.athletesListView.GridLines = true;
-            this.athletesListView.HotTracking = true;
-            this.athletesListView.HoverSelection = true;
-            this.athletesListView.Location = new System.Drawing.Point(5, 5);
-            this.athletesListView.Name = "athletesListView";
-            this.athletesListView.Size = new System.Drawing.Size(321, 434);
-            this.athletesListView.TabIndex = 0;
-            this.athletesListView.UseCompatibleStateImageBehavior = false;
-            this.athletesListView.View = System.Windows.Forms.View.List;
-            this.athletesListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.athletesListView_MouseClick);
-            // 
             // panel2
             // 
             this.panel2.Controls.Add(this.chart1);
@@ -633,6 +619,21 @@
             title1.Name = "ResultsChart";
             title1.Text = "Results Chart";
             this.chart1.Titles.Add(title1);
+            // 
+            // athletesListView
+            // 
+            this.athletesListView.Activation = System.Windows.Forms.ItemActivation.OneClick;
+            this.athletesListView.GridLines = true;
+            this.athletesListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.athletesListView.HotTracking = true;
+            this.athletesListView.HoverSelection = true;
+            this.athletesListView.Location = new System.Drawing.Point(5, 5);
+            this.athletesListView.Name = "athletesListView";
+            this.athletesListView.Size = new System.Drawing.Size(321, 434);
+            this.athletesListView.TabIndex = 0;
+            this.athletesListView.UseCompatibleStateImageBehavior = false;
+            this.athletesListView.View = System.Windows.Forms.View.List;
+            this.athletesListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.athletesListView_MouseClick);
             // 
             // Home
             // 
