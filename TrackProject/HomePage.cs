@@ -56,7 +56,7 @@ namespace TrackProject
             {
                 while (sqlReader2.Read())
                 {
-                    var listViewItem = new ListViewItem(sqlReader2.GetString(0));
+                    var listViewItem = new ListViewItem(new[] { sqlReader2.GetString(0), sqlReader2.GetString(1) });
                     meetsListView.Items.Add(listViewItem);
                 }
                 sqlReader2.Close();
@@ -111,6 +111,40 @@ namespace TrackProject
             return -1;
         }
 
+        private void populateTabBox(int aId)
+        {
+            TabPage tempTabPage = new TabPage();
+            tabBox.Controls.Add(tempTabPage);
+        }
+
+        private void getEventsForAthlete(int aId)
+        {
+            //0 = rId, 1 = time, 2 = distance, 3 = mId, 4 = place, 5 = trackEvent, 6 = finals
+            string[,] results = new string[100, 7];
+
+            //--------------------------------------------------------
+            SqlDataReader sqlReader;
+            string ssConnectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True";
+            SqlConnection conn = new SqlConnection(ssConnectionString);
+            conn.Open();
+            SqlCommand command = conn.CreateCommand();
+            command.CommandText = "SELECT * FROM Record WHERE aId = @aId";
+            command.Parameters.AddWithValue("@aId", aId);
+            command.CommandType = CommandType.Text;
+            command.Connection = conn;
+            sqlReader = command.ExecuteReader();
+            if (sqlReader.HasRows)
+            {
+                int i = 0;
+                while (sqlReader.Read())
+                {
+                    results[i, 4] = "" + sqlReader.GetInt32(6);
+                    i++;
+                }
+            }
+            sqlReader.Close();
+            conn.Close();
+        }
         public void meetsListView_MouseClick(object sender, MouseEventArgs e)
         {
 
