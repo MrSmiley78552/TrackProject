@@ -78,7 +78,6 @@ namespace TrackProject
             meetsPanel.Visible = false;
             athletePanel.Visible = true;
             populateTabBox(aIdFromDatabase);
-            MessageBox.Show("HI: " + athletesListView.SelectedItems[0].Text + "   AID: " + aIdFromDatabase);
         }
 
         private int getAIDFromDatabase(string fName, string lName)
@@ -114,11 +113,27 @@ namespace TrackProject
 
         private void populateTabBox(int aId)
         {
+            athletePanel.Controls.Clear();
+            TabControl dynamicTabControl = new TabControl();
+            dynamicTabControl.Name = "DynamicTabControl";
+            dynamicTabControl.BackColor = Color.White;
+            dynamicTabControl.ForeColor = Color.Black;
+            dynamicTabControl.Font = new Font("Arial", 8);
+            dynamicTabControl.Width = 396;
+            dynamicTabControl.Height = 318;
+            athletePanel.Controls.Add(dynamicTabControl);
+            //add the overall tab by default
+            TabPage overallTabPage = new TabPage();
+            dynamicTabControl.Controls.Add(overallTabPage);
+            overallTabPage.Text = "Overall";
+
             string[] events = getEventsForAthlete(aId);
             foreach(var tabEvent in events)
             {
+                if (tabEvent == null)
+                    break;
                 TabPage tempTabPage = new TabPage();
-                tabBox.Controls.Add(tempTabPage);
+                dynamicTabControl.Controls.Add(tempTabPage);
                 tempTabPage.Text = tabEvent;
             }
         }

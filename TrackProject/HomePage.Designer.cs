@@ -38,11 +38,7 @@ namespace TrackProject
             this.columnHeaderMeetName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderDate = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.athletePanel = new System.Windows.Forms.Panel();
-            this.tabBox = new System.Windows.Forms.TabControl();
-            this.overallTab = new System.Windows.Forms.TabPage();
             this.meetsPanel.SuspendLayout();
-            this.athletePanel.SuspendLayout();
-            this.tabBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // athletesLabel
@@ -112,30 +108,10 @@ namespace TrackProject
             // 
             // athletePanel
             // 
-            this.athletePanel.Controls.Add(this.tabBox);
             this.athletePanel.Location = new System.Drawing.Point(162, 79);
             this.athletePanel.Name = "athletePanel";
             this.athletePanel.Size = new System.Drawing.Size(396, 318);
             this.athletePanel.TabIndex = 3;
-            // 
-            // tabBox
-            // 
-            this.tabBox.Controls.Add(this.overallTab);
-            this.tabBox.Location = new System.Drawing.Point(3, 3);
-            this.tabBox.Name = "tabBox";
-            this.tabBox.SelectedIndex = 0;
-            this.tabBox.Size = new System.Drawing.Size(390, 312);
-            this.tabBox.TabIndex = 0;
-            // 
-            // overallTab
-            // 
-            this.overallTab.Location = new System.Drawing.Point(4, 22);
-            this.overallTab.Name = "overallTab";
-            this.overallTab.Padding = new System.Windows.Forms.Padding(3);
-            this.overallTab.Size = new System.Drawing.Size(382, 286);
-            this.overallTab.TabIndex = 0;
-            this.overallTab.Text = "Overall";
-            this.overallTab.UseVisualStyleBackColor = true;
             // 
             // HomePage
             // 
@@ -149,8 +125,6 @@ namespace TrackProject
             this.Name = "HomePage";
             this.Text = "HomePage";
             this.meetsPanel.ResumeLayout(false);
-            this.athletePanel.ResumeLayout(false);
-            this.tabBox.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -165,7 +139,5 @@ namespace TrackProject
         private ListView meetsListView;
         private ColumnHeader columnHeaderMeetName;
         private ColumnHeader columnHeaderDate;
-        private TabControl tabBox;
-        private TabPage overallTab;
     }
 }
