@@ -77,6 +77,7 @@ namespace TrackProject
             int aIdFromDatabase = getAIDFromDatabase(splitNames[0], splitNames[1]);
             meetsPanel.Visible = false;
             athletePanel.Visible = true;
+            populateTabBox(aIdFromDatabase);
             MessageBox.Show("HI: " + athletesListView.SelectedItems[0].Text + "   AID: " + aIdFromDatabase);
         }
 
@@ -113,16 +114,19 @@ namespace TrackProject
 
         private void populateTabBox(int aId)
         {
-            TabPage tempTabPage = new TabPage();
-            tabBox.Controls.Add(tempTabPage);
+            string[] events = getEventsForAthlete(aId);
+            foreach(var tabEvent in events)
+            {
+                TabPage tempTabPage = new TabPage();
+                tabBox.Controls.Add(tempTabPage);
+                tempTabPage.Text = tabEvent;
+            }
         }
 
-        private void getEventsForAthlete(int aId)
+        private string[] getEventsForAthlete(int aId)
         {
-            //0 = rId, 1 = time, 2 = distance, 3 = mId, 4 = place, 5 = trackEvent, 6 = finals
-            string[,] results = new string[100, 7];
+            string[] events = new string[20];
 
-            //--------------------------------------------------------
             SqlDataReader sqlReader;
             string ssConnectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True";
             SqlConnection conn = new SqlConnection(ssConnectionString);
@@ -135,15 +139,23 @@ namespace TrackProject
             sqlReader = command.ExecuteReader();
             if (sqlReader.HasRows)
             {
+                //Want to double check this chunk to ensure that it works as expected.
+                //suspect problems with where it breaks to. 
                 int i = 0;
                 while (sqlReader.Read())
                 {
-                    results[i, 4] = "" + sqlReader.GetInt32(6);
+                    for(int curEvent = 0; curEvent < events.Length; curEvent++)
+                    {
+                        if (events[curEvent] != null && events[curEvent].Equals(sqlReader.GetString(6)))
+                            break;
+                    }
+                    events[i] = "" + sqlReader.GetString(6);
                     i++;
                 }
             }
             sqlReader.Close();
             conn.Close();
+            return events;
         }
         public void meetsListView_MouseClick(object sender, MouseEventArgs e)
         {
