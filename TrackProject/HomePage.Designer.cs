@@ -39,7 +39,6 @@ namespace TrackProject
             this.columnHeaderDate = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.athletePanel = new System.Windows.Forms.Panel();
             this.meetsPanel.SuspendLayout();
-            this.athletePanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // athletesLabel
@@ -113,7 +112,6 @@ namespace TrackProject
             this.athletePanel.Name = "athletePanel";
             this.athletePanel.Size = new System.Drawing.Size(396, 318);
             this.athletePanel.TabIndex = 3;
-            
             // 
             // HomePage
             // 
@@ -127,7 +125,6 @@ namespace TrackProject
             this.Name = "HomePage";
             this.Text = "HomePage";
             this.meetsPanel.ResumeLayout(false);
-            this.athletePanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

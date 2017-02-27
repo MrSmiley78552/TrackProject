@@ -126,8 +126,6 @@ namespace TrackProject
             TabPage overallTabPage = new TabPage();
             dynamicTabControl.Controls.Add(overallTabPage);
             overallTabPage.Text = "Overall";
-            //this is how to add things to the tab pages
-            overallTabPage.Controls.Add(createAthleteEventChart());
 
             string[] events = getEventsForAthlete(aId);
             foreach(var tabEvent in events)
@@ -137,6 +135,8 @@ namespace TrackProject
                 TabPage tempTabPage = new TabPage();
                 dynamicTabControl.Controls.Add(tempTabPage);
                 tempTabPage.Text = tabEvent;
+                //this is how to add things to the tab pages
+                tempTabPage.Controls.Add(createAthleteEventChart(aId, tabEvent));
             }
         }
 
@@ -156,8 +156,6 @@ namespace TrackProject
             sqlReader = command.ExecuteReader();
             if (sqlReader.HasRows)
             {
-                //Want to double check this chunk to ensure that it works as expected.
-                //suspect problems with where it breaks to. 
                 int i = 0;
                 while (sqlReader.Read())
                 {
@@ -179,7 +177,8 @@ namespace TrackProject
 
         }
 
-        private System.Windows.Forms.DataVisualization.Charting.Chart createAthleteEventChart()
+        //creates chart for individual events for an athlete
+        private System.Windows.Forms.DataVisualization.Charting.Chart createAthleteEventChart(int aId, string eventName)
         {
             System.Windows.Forms.DataVisualization.Charting.Chart chart1;
 
@@ -189,9 +188,7 @@ namespace TrackProject
 
             chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(chart1)).BeginInit();
-            // 
-            // chart1
-            // 
+            //chart
             chartArea1.Name = "ChartArea1";
             chart1.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
@@ -205,15 +202,73 @@ namespace TrackProject
             chart1.Size = new System.Drawing.Size(300, 300);
             chart1.TabIndex = 0;
             chart1.Text = "chart1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point;
             //data points for the graph
-            chart1.Series["Series1"].Points.AddXY(1, 5);
-            chart1.Series["Series1"].Points.AddXY(2, 7);
-            chart1.Series["Series1"].Points.AddXY(3, 2);
+            int chartEntryCount = 0;
+            string[,] records = getRecordsForIndividualAthleteAndIndividualEvent(aId, eventName);
+            for(int record = 0; record < records.GetLength(0); record++)
+            {
+                //here we will be getting a time
+                if(records[record, 0] != null && !records[record, 0].Equals(""))
+                {
+                    //handling time in the 1:23.45 format
+                    if(records[record, 0].Contains(':'))
+                    {
+                        string[] temp = records[record, 0].Split(':');
+                        double convertedTime = Math.Round(Convert.ToDouble(temp[0]) * 60 + Convert.ToDouble(temp[1]), 2);
+                        chart1.Series["Series1"].Points.AddXY(chartEntryCount++, convertedTime);
+                    }
+                    else
+                        chart1.Series["Series1"].Points.AddXY(chartEntryCount++, records[record, 0]);
+                }
+                //here we will be getting a distance
+                else if(records[record, 0] != null)
+                {
+
+                }
+                else
+                    break;
+            }
 
 
             ((System.ComponentModel.ISupportInitialize)(chart1)).EndInit();
 
             return chart1;
+        }
+
+        private string[,] getRecordsForIndividualAthleteAndIndividualEvent(int aId, string eventName)
+        {
+            string[,] eventAndTime = new string[20, 4];
+
+            SqlDataReader sqlReader;
+            string ssConnectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True";
+            SqlConnection conn = new SqlConnection(ssConnectionString);
+            conn.Open();
+            SqlCommand command = conn.CreateCommand();
+            command.CommandText = "SELECT * FROM Record WHERE aId = @aId AND event = @event";
+            command.Parameters.AddWithValue("@aId", aId);
+            command.Parameters.AddWithValue("@event", eventName);
+            command.CommandType = CommandType.Text;
+            command.Connection = conn;
+            sqlReader = command.ExecuteReader();
+            if (sqlReader.HasRows)
+            {
+                int recCount = 0;
+                while (sqlReader.Read())
+                {
+                    string time = sqlReader.GetString(1);
+                    eventAndTime[recCount, 0] = time;
+                    string distance = sqlReader.GetString(2);
+                    eventAndTime[recCount, 1] = distance;
+                    int mId = sqlReader.GetInt32(4);
+                    eventAndTime[recCount, 2] = "" + mId;
+                    int finals = sqlReader.GetInt32(7);
+                    eventAndTime[recCount, 3] = "" + finals;
+                }
+            }
+            sqlReader.Close();
+            conn.Close();
+            return eventAndTime;
         }
     }
 }
