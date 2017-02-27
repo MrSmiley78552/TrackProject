@@ -126,6 +126,8 @@ namespace TrackProject
             TabPage overallTabPage = new TabPage();
             dynamicTabControl.Controls.Add(overallTabPage);
             overallTabPage.Text = "Overall";
+            //this is how to add things to the tab pages
+            overallTabPage.Controls.Add(createAthleteEventChart());
 
             string[] events = getEventsForAthlete(aId);
             foreach(var tabEvent in events)
@@ -175,6 +177,43 @@ namespace TrackProject
         public void meetsListView_MouseClick(object sender, MouseEventArgs e)
         {
 
+        }
+
+        private System.Windows.Forms.DataVisualization.Charting.Chart createAthleteEventChart()
+        {
+            System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+
+            chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            ((System.ComponentModel.ISupportInitialize)(chart1)).BeginInit();
+            // 
+            // chart1
+            // 
+            chartArea1.Name = "ChartArea1";
+            chart1.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            chart1.Legends.Add(legend1);
+            chart1.Location = new System.Drawing.Point(46, 15);
+            chart1.Name = "chart1";
+            series1.ChartArea = "ChartArea1";
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            chart1.Series.Add(series1);
+            chart1.Size = new System.Drawing.Size(300, 300);
+            chart1.TabIndex = 0;
+            chart1.Text = "chart1";
+            //data points for the graph
+            chart1.Series["Series1"].Points.AddXY(1, 5);
+            chart1.Series["Series1"].Points.AddXY(2, 7);
+            chart1.Series["Series1"].Points.AddXY(3, 2);
+
+
+            ((System.ComponentModel.ISupportInitialize)(chart1)).EndInit();
+
+            return chart1;
         }
     }
 }
