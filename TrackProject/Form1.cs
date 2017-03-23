@@ -315,6 +315,10 @@ namespace TrackProject
             {
                 if (memberOfWhichSchool(line, memberSchools, j))
                 {
+                    if (schoolName.Equals("Fargo South High School") && trackOrFieldEvent.Equals("4x200 Meter Relay"))
+                    {
+                        int t = 0;
+                    }
                     relayEvents(line, j, words);
                 }
             }
@@ -332,62 +336,57 @@ namespace TrackProject
         //if the line does not, then the method returns false
         private Boolean memberOfWhichSchool(string line, string [] memberSchools, int pageLineNumber)
         {
-            //if(line.Contains("Mackenzie"))
-            //{
+            string shortenedSchoolName;
+            if (pageLineNumber > 4 && currentColumnKeyWords.Length != 0)
+            {
+                foreach (var school in memberSchools)
+                {
+                    try
+                    {
+                        if (line.Contains(school) && !school.Equals("St"))
+                        {
+                            schoolName = school;
+                            schoolNameLengthFlag = school.Split(' ').Length;
+                            return true;
+                        }
+                        else
+                        {
+                            shortenedSchoolName = school.Substring(0, school.Length - 1);
+                            if (!school.Equals("St") && line.Contains(shortenedSchoolName))
+                            {
+                                schoolName = school;
+                                schoolNameLengthFlag = shortenedSchoolName.Split(' ').Length;
+                                return true;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
 
-            //}
-            //string shortenedSchoolName;
-            //if (pageLineNumber > 4 && currentColumnKeyWords.Length != 0)
-            //{
-            //    foreach (var school in memberSchools)
-            //    {
-            //        try
-            //        {
-            //            if (line.Contains(school) && !school.Equals("St"))
-            //            {
-            //                schoolName = school;
-            //                schoolNameLengthFlag = school.Split(' ').Length - 1;
-            //                return true;
-            //            }
-            //            else
-            //            {
-            //                shortenedSchoolName = school.Substring(0, school.Length - 1);
-            //                if (!school.Equals("St") && line.Contains(shortenedSchoolName))
-            //                {
-            //                    schoolName = school;
-            //                    schoolNameLengthFlag = shortenedSchoolName.Split(' ').Length - 1;
-            //                    return true;
-            //                }
-            //            }
-            //        }
-            //        catch(Exception e)
-            //        {
-
-            //        }
-                    
-            //    }
-                if (line.Contains("Fargo Davies High School"))
-                {
-                    schoolName = "Fargo Davies High School";
-                    schoolNameLengthFlag = 4;
-                    return true;
+                    }
                 }
-                else if (line.Contains("Fargo Davies"))
-                {
-                    schoolName = "Fargo Davies High School";
-                    schoolNameLengthFlag = 2;
-                    return true;
-                }
-                else if (line.Contains("West Fargo High School"))
-                {
-                    schoolName = "West Fargo High School";
-                    schoolNameLengthFlag = 4;
-                    return true;
-                }
+            }
             return false;
-            //}
-            //return false;
-        }
+                //    if (line.Contains("Fargo Davies High School"))
+                //    {
+                //        schoolName = "Fargo Davies High School";
+                //        schoolNameLengthFlag = 4;
+                //        return true;
+                //    }
+                //    else if (line.Contains("Fargo Davies"))
+                //    {
+                //        schoolName = "Fargo Davies High School";
+                //        schoolNameLengthFlag = 2;
+                //        return true;
+                //    }
+                //    else if (line.Contains("West Fargo High School"))
+                //    {
+                //        schoolName = "West Fargo High School";
+                //        schoolNameLengthFlag = 4;
+                //        return true;
+                //    }
+                //return false;
+            }
 
         //checks if the athlete is in the database and returns their aId
         //will return  -1  if athlete is not in database
