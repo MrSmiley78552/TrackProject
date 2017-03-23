@@ -199,12 +199,11 @@ namespace TrackProject
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             chart1.Series.Add(series1);
-            chart1.Size = new System.Drawing.Size(300, 300);
+            chart1.Size = new System.Drawing.Size(300, 270);
             chart1.TabIndex = 0;
             chart1.Text = "chart1";
             series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point;
             //data points for the graph
-            int chartEntryCount = 0;
             string[,] records = getRecordsForIndividualAthleteAndIndividualEvent(aId, eventName);
             for(int record = 0; record < records.GetLength(0); record++)
             {
@@ -216,15 +215,20 @@ namespace TrackProject
                     {
                         string[] temp = records[record, 0].Split(':');
                         double convertedTime = Math.Round(Convert.ToDouble(temp[0]) * 60 + Convert.ToDouble(temp[1]), 2);
-                        chart1.Series["Series1"].Points.AddXY(chartEntryCount++, convertedTime);
+                        chart1.Series["Series1"].Points.AddXY(records[record, 0], convertedTime);
                     }
                     else
-                        chart1.Series["Series1"].Points.AddXY(chartEntryCount++, records[record, 0]);
+                        chart1.Series["Series1"].Points.AddXY(records[record, 0], records[record, 0]);
                 }
                 //here we will be getting a distance
                 else if(records[record, 0] != null)
                 {
-
+                    if (records[record, 1].Contains('-'))
+                    {
+                        string[] temp = records[record, 1].Split('-');
+                        double convertedDistance = Math.Round((Convert.ToDouble(temp[0]) * 12 + Convert.ToDouble(temp[1])) / 12, 2);
+                        chart1.Series["Series1"].Points.AddXY(records[record, 1], convertedDistance);
+                    }
                 }
                 else
                     break;
@@ -264,6 +268,7 @@ namespace TrackProject
                     eventAndTime[recCount, 2] = "" + mId;
                     int finals = sqlReader.GetInt32(7);
                     eventAndTime[recCount, 3] = "" + finals;
+                    recCount++;
                 }
             }
             sqlReader.Close();

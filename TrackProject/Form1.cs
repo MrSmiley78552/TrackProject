@@ -58,14 +58,15 @@ namespace TrackProject
             //sets up the connection to the database
             con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True");
             con.Open();
-
+            
             //sets up the pdfreader
             //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
             //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
-            //WORKS --- PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
-            PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
+            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
+            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
             //Has trouble with the relays --- PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
-            //WORKS --- PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
+            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
+            PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
             numberOfPages = reader.NumberOfPages;
             string text = PdfTextExtractor.GetTextFromPage(reader, 1, new LocationTextExtractionStrategy());
             string[] linesOnPage;

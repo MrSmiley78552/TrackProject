@@ -16,7 +16,6 @@ namespace TrackProject
         public Home()
         {
             InitializeComponent();
-
         }
 
         public void setAllPanelsVisibleFalse()
