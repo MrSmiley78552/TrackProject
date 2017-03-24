@@ -501,7 +501,7 @@ namespace TrackProject
                         escapeFlag++;   
                     }
 
-                    if(currentLine.Contains("A") || currentLine.Contains("B") || currentLine.Contains("C"))
+                    if(currentLine.Contains("A") || currentLine.Contains("B") || currentLine.Contains("C") || currentLine.Contains("D"))
                     {
                         time = currentLine[1 + schoolNameLengthFlag + relayFlag + seedFlag];
                         if(time.Equals(""))
