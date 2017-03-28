@@ -56,78 +56,91 @@ namespace TrackProject
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //sets up the connection to the database
-            con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True");
-            con.Open();
-            
-            //sets up the pdfreader
-            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
-            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
-            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
-            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
-            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
-            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
-            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
-            PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
-            numberOfPages = reader.NumberOfPages;
-            string text = PdfTextExtractor.GetTextFromPage(reader, 1, new LocationTextExtractionStrategy());
-            string[] linesOnPage;
-            string line;
-            //splits the page by each new line
-            linesOnPage = text.Split('\n');
+            PdfReader[] pdfArray = new PdfReader[8];
+            pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
+            pdfArray[1] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
+            pdfArray[2] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
+            pdfArray[3] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
+            pdfArray[4] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
+            pdfArray[5] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
+            pdfArray[6] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
+            pdfArray[7] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
 
-            //cycles through each line in the page
-            for (int lineNumber = 0; lineNumber < 5; lineNumber++)
+            foreach (var reader in pdfArray)
             {
-                //returns a single line of text
-                line = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(linesOnPage[lineNumber]));
+                //sets up the connection to the database
+                con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True");
+                con.Open();
 
-                //----------------------------------------------------------------------------------------
-                //want to put majority of code here
-                //----------------------------------------------------------------------------------------
+                //sets up the pdfreader
+                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
+                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
+                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
+                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
+                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
+                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
+                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
+                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
+                numberOfPages = reader.NumberOfPages;
+                string text = PdfTextExtractor.GetTextFromPage(reader, 1, new LocationTextExtractionStrategy());
+                string[] linesOnPage;
+                string line;
+                //splits the page by each new line
+                linesOnPage = text.Split('\n');
 
-                autoSetDateOfMeet(lineNumber, line, linesOnPage);
-                autoSetNameOfMeet(lineNumber, line);
-            }
-
-            //checks if the pdf contains 2 columns
-            if (autoCheckForTwoColumns(reader) == true)
-            {
-                //the document has 2 columns
-
-                //clear the temp file
-                File.WriteAllText(fileForTemporaryPDFs, String.Empty);
-
-                //orgnaizes the two column pdf into a single column text document
-                organizeTwoColumnsIntoOneColumn(reader);
-
-
-                //data is stored in a text file now, so figure out how to use the methods I currently have to parse through that information__________________________________________________________
-                string[] lines = System.IO.File.ReadAllLines(fileForTemporaryPDFs);
-                for(int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
+                //cycles through each line in the page
+                for (int lineNumber = 0; lineNumber < 5; lineNumber++)
                 {
-                    autoSetColumnCount(lineNumber, lines[lineNumber], lines);
+                    //returns a single line of text
+                    line = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(linesOnPage[lineNumber]));
+
+                    //----------------------------------------------------------------------------------------
+                    //want to put majority of code here
+                    //----------------------------------------------------------------------------------------
+
+                    autoSetDateOfMeet(lineNumber, line, linesOnPage);
+                    autoSetNameOfMeet(lineNumber, line);
+                }
+
+                //checks if the pdf contains 2 columns
+                if (autoCheckForTwoColumns(reader) == true)
+                {
+                    //the document has 2 columns
+
+                    //clear the temp file
+                    File.WriteAllText(fileForTemporaryPDFs, String.Empty);
+
+                    //orgnaizes the two column pdf into a single column text document
+                    organizeTwoColumnsIntoOneColumn(reader);
 
 
-                    //sets  trackOrFieldEvent  to the type in the line
-                    autoSetEventType(lines[lineNumber]);
-
-                    //will skip the team rankings
-                    if (!trackOrFieldEvent.Equals("Team Rankings"))
+                    //data is stored in a text file now, so figure out how to use the methods I currently have to parse through that information__________________________________________________________
+                    string[] lines = System.IO.File.ReadAllLines(fileForTemporaryPDFs);
+                    for (int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
                     {
-                        if (!trackOrFieldEvent.Equals(""))
-                            determineIfRelayOrSingleEvent(lines[lineNumber], lineNumber, lines);
+                        autoSetColumnCount(lineNumber, lines[lineNumber], lines);
+
+
+                        //sets  trackOrFieldEvent  to the type in the line
+                        autoSetEventType(lines[lineNumber]);
+
+                        //will skip the team rankings
+                        if (!trackOrFieldEvent.Equals("Team Rankings"))
+                        {
+                            if (!trackOrFieldEvent.Equals(""))
+                                determineIfRelayOrSingleEvent(lines[lineNumber], lineNumber, lines);
+                        }
                     }
                 }
-            }
-            else
-            {
-                //the document has 1 column
+                else
+                {
+                    //the document has 1 column
 
-                //handles all operations on the single column pdf
-                autoHandleSingleColumnPDF(reader);
+                    //handles all operations on the single column pdf
+                    autoHandleSingleColumnPDF(reader);
+                }
+                con.Close();
             }
-            con.Close();
         }
 
         private void autoHandleSingleColumnPDF(PdfReader reader)
@@ -935,7 +948,10 @@ namespace TrackProject
                     alternateNameLengthFlag = 3;
                 }
             }
-            
+            if(fName.Equals("Naomi") && lName.Equals("Gross"))
+            {
+                int test = 0;
+            }
             //check for Yr and its length
             if(currentColumnKeyWords.Contains("Yr"))
             {
@@ -975,11 +991,11 @@ namespace TrackProject
                 }
                 catch(Exception e)
                 { }
-                if (distance.Equals("") || distance.Equals(" ") || distance.Equals("  ") || distance.Equals("10") || distance.Equals("8") || distance.Equals("6") ||
-                    distance.Equals("5") || distance.Equals("4") || distance.Equals("3") || distance.Equals("2") || distance.Equals("1.5") || distance.Equals("1"))
+                if (distance.Equals("") || distance.Equals(" ") || distance.Equals("  ") || distance.Equals("10") || distance.Equals("8") || distance.Equals("6") || distance.Equals("4.5") ||
+                    distance.Equals("5") || distance.Equals("4") || distance.Equals("3") || distance.Equals("2.5") || distance.Equals("2") || distance.Equals("1.5") || distance.Equals("1"))
                     distance = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
                 distance = trimTimeOrDistance(distance);
-                if (!distance.Contains('.'))
+                if (!distance.Contains(".") && !distance.Contains("-"))
                 {
                     distance = trimTimeOrDistance(alternateDistance);
                 }
@@ -994,8 +1010,8 @@ namespace TrackProject
                 }
                 catch(Exception e)
                 { }
-                if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") ||
-                    time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1.5") || time.Equals("1"))
+                if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") || time.Equals("4.5") ||
+                    time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2.5") || time.Equals("2") || time.Equals("1.5") || time.Equals("1"))
                     time = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
                 time = trimTimeOrDistance(time);
                 if (!time.Contains('.'))
@@ -1012,13 +1028,13 @@ namespace TrackProject
 
         private string trimTimeOrDistance(string mark)
         {
-            char[] lettersToCheckFor = { 'Q', 'x', 'J', 'X', 'D' };
+            char[] lettersToCheckFor = { 'Q', 'x', 'J', 'X', 'D', 'q', 'B', '!' };
             foreach(var letter in lettersToCheckFor)
             {
                 if(mark.Contains(letter))
                 {
                     int indexOfLetter = mark.IndexOf(letter);
-                    if (letter.Equals('Q') && indexOfLetter != -1)
+                    if ((letter.Equals('Q') || letter.Equals('q')) && indexOfLetter != -1)
                         mark = mark.Substring(0, indexOfLetter);
                     else if (indexOfLetter != -1)
                         mark = mark.Substring(indexOfLetter + 1, mark.Length - (indexOfLetter + 1));
