@@ -65,10 +65,10 @@ namespace TrackProject
             //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
             //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
             //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
-            //Has trouble with the relays --- PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
+            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
             //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
-            PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
-            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
+            //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
+            PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
             numberOfPages = reader.NumberOfPages;
             string text = PdfTextExtractor.GetTextFromPage(reader, 1, new LocationTextExtractionStrategy());
             string[] linesOnPage;
@@ -334,7 +334,7 @@ namespace TrackProject
         //if the line does not, then the method returns false
         private Boolean memberOfWhichSchool(string line, string [] memberSchools, int pageLineNumber)
         {
-            if (pageLineNumber > 4 && currentColumnKeyWords.Length != 0)
+            if (pageLineNumber > 4 && currentColumnKeyWords != null && currentColumnKeyWords.Length != 0)
             {
                 foreach (var school in memberSchools)
                 {
@@ -500,15 +500,15 @@ namespace TrackProject
                         }
 
                         //time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length];
-                        if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") ||
-                            time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
+                        if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("7") ||
+                            time.Equals("6") || time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
                             time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 1];
                     }
                     else
                     {
                         time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 2];
-                        if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") ||
-                            time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
+                        if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("7") ||
+                            time.Equals("6") || time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
                             time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 3];
                     }
                     time = trimTimeOrDistance(time);
@@ -863,6 +863,10 @@ namespace TrackProject
             string[] temp = line.Split(' ');
             string[] temp2 = new string[temp.Length - 1];
             int indexOfBlank = 0;
+            string alternateFName = "";
+            string alternateLName = "";
+            int alternateNameLengthFlag = 0;
+
             for(int i = 0; i < temp.Length -1; i++)
             {
                 if (temp[i].Equals("") && i > 0)
@@ -917,12 +921,32 @@ namespace TrackProject
                     fName = temp[3];
                     nameLengthFlag = 3;
                 }
+                else if(temp[3].Contains(','))
+                {
+                    lName = temp[1] + temp[2] + temp[3];
+                    lName = lName.Substring(0, lName.Length - 1);
+                    fName = temp[4];
+                    nameLengthFlag = 4;
+                }
+                else if(temp[1].Contains(','))
+                {
+                    alternateLName = temp[1];
+                    alternateFName = temp[2] + temp[3];
+                    alternateNameLengthFlag = 3;
+                }
             }
             
             //check for Yr and its length
             if(currentColumnKeyWords.Contains("Yr"))
             {
-                year = Convert.ToInt32(temp[1 + nameLengthFlag]);
+                try
+                {
+                    year = Convert.ToInt32(temp[1 + nameLengthFlag]);
+                }
+                catch(Exception e)
+                {
+                    year = 0;
+                }
                 yearLengthFlag = 1;
             }
 
@@ -939,25 +963,45 @@ namespace TrackProject
             if (currentColumnKeyWords.Contains("Finals"))
                 finalsLengthFlag = 1;
 
-            
-
+            string alternateDistance = "";
+            string alternateTime = "";
             //checks if a track event or a field event and records the time or distance respectively
             if (fieldEvents.Contains(trackOrFieldEvent))
             {
                 distance = temp[ nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
-                if(distance.Equals("") || distance.Equals(" ") || distance.Equals("  ") || distance.Equals("10") || distance.Equals("8") || distance.Equals("6") ||
-                    distance.Equals("5") || distance.Equals("4") || distance.Equals("3") || distance.Equals("2") || distance.Equals("1"))
+                try
+                {
+                    alternateDistance = temp[alternateNameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
+                }
+                catch(Exception e)
+                { }
+                if (distance.Equals("") || distance.Equals(" ") || distance.Equals("  ") || distance.Equals("10") || distance.Equals("8") || distance.Equals("6") ||
+                    distance.Equals("5") || distance.Equals("4") || distance.Equals("3") || distance.Equals("2") || distance.Equals("1.5") || distance.Equals("1"))
                     distance = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
                 distance = trimTimeOrDistance(distance);
+                if (!distance.Contains('.'))
+                {
+                    distance = trimTimeOrDistance(alternateDistance);
+                }
                 time = "";
             }
             else
             {
                 time = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
+                try
+                {
+                    alternateTime = temp[alternateNameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
+                }
+                catch(Exception e)
+                { }
                 if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") ||
-                    time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
+                    time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1.5") || time.Equals("1"))
                     time = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
                 time = trimTimeOrDistance(time);
+                if (!time.Contains('.'))
+                {
+                    time = trimTimeOrDistance(alternateTime);
+                }
                 distance = "";
             }
             
@@ -968,7 +1012,7 @@ namespace TrackProject
 
         private string trimTimeOrDistance(string mark)
         {
-            char[] lettersToCheckFor = { 'Q', 'x', 'J' };
+            char[] lettersToCheckFor = { 'Q', 'x', 'J', 'X', 'D' };
             foreach(var letter in lettersToCheckFor)
             {
                 if(mark.Contains(letter))
