@@ -56,15 +56,19 @@ namespace TrackProject
 
         private void button1_Click(object sender, EventArgs e)
         {
-            PdfReader[] pdfArray = new PdfReader[8];
-            pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
-            pdfArray[1] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
-            pdfArray[2] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
-            pdfArray[3] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
-            pdfArray[4] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
-            pdfArray[5] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
-            pdfArray[6] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
-            pdfArray[7] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
+            PdfReader[] pdfArray = new PdfReader[1];
+            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
+            //pdfArray[1] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
+            //pdfArray[2] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
+            //pdfArray[3] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
+            //pdfArray[4] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
+            //pdfArray[5] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
+            //pdfArray[6] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
+            //pdfArray[7] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
+            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\Results - Full - 2017-03-31 EDC Indoor - Girls.pdf");
+            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\Results - Full - 2017-03-25 Fargo South v Fargo Davies JV Indoor - Girls-4.pdf");
+            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
+            pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\classaresults2-2.pdf");
 
             foreach (var reader in pdfArray)
             {
@@ -460,6 +464,7 @@ namespace TrackProject
                 int relayFlag = 0;
                 int seedFlag = 0;
                 int escapeFlag = 0;
+                int currentPlaceHolder = 0;
 
                 Regex rgx = new Regex(@"\d{4}");
                 Match mat = rgx.Match(line);
@@ -499,30 +504,49 @@ namespace TrackProject
                             escapeFlag++;
                         }
 
-                        if (currentLine.Contains("A") || currentLine.Contains("B") || currentLine.Contains("C") || currentLine.Contains("D"))
+                        if (currentLine.Contains("A") || currentLine.Contains("B") || currentLine.Contains("C") || currentLine.Contains("D") || currentLine.Contains("E"))
                         {
-                            time = currentLine[1 + schoolNameLengthFlag + relayFlag + seedFlag];
+                            currentPlaceHolder = 1 + schoolNameLengthFlag + relayFlag + seedFlag;
+                            time = currentLine[currentPlaceHolder];
                             if (time.Equals(""))
-                                time = currentLine[1 + schoolNameLengthFlag + relayFlag + seedFlag - 1];
+                            {
+                                currentPlaceHolder = 1 + schoolNameLengthFlag + relayFlag + seedFlag - 1;
+                                time = currentLine[currentPlaceHolder];
+                            }
                         }
                         else
                         {
-                            time = currentLine[1 + schoolNameLengthFlag + seedFlag];
+                            currentPlaceHolder = 1 + schoolNameLengthFlag + seedFlag;
+                            time = currentLine[currentPlaceHolder];
                             if (time.Equals(""))
-                                time = currentLine[1 + schoolNameLengthFlag + seedFlag - 1];
+                            {
+                                currentPlaceHolder = 1 + schoolNameLengthFlag + seedFlag - 1;
+                                time = currentLine[currentPlaceHolder];
+                            }
                         }
 
                         //time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length];
                         if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("7") ||
                             time.Equals("6") || time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
-                            time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 1];
+                        {
+                            currentPlaceHolder = 1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 1;
+                            time = currentLine[currentPlaceHolder];
+                        }
                     }
                     else
                     {
-                        time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 2];
+                        currentPlaceHolder = 1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 2;
+                        time = currentLine[currentPlaceHolder];
                         if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("7") ||
                             time.Equals("6") || time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
-                            time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 3];
+                        {
+                            currentPlaceHolder = 1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 3;
+                            time = currentLine[currentPlaceHolder];
+                        }
+                    }
+                    if(time.Equals("A") || time.Equals("B") || time.Equals("C") || time.Equals("D") || time.Equals("E"))
+                    {
+                        time = currentLine[currentPlaceHolder + 1];
                     }
                     time = trimTimeOrDistance(time);
 
@@ -595,15 +619,22 @@ namespace TrackProject
                         }
                         catch (Exception e)
                         {
-                            if (nextLineArray[7 - yearMissingFlag].Contains(")"))
-                                year = 0;
-                            else
+                            try
                             {
-                                nameLengthFlag += 1;
-                                fName = nextLineArray[6 - yearMissingFlag] + nextLineArray[7 - yearMissingFlag];
-                                if (fName.Contains(','))
-                                    fName = fName.Substring(0, fName.Length - 1);
-                                year = Convert.ToInt32(nextLineArray[7 + nameLengthFlag - yearMissingFlag]);
+                                if (nextLineArray[7 - yearMissingFlag].Contains(")"))
+                                    year = 0;
+                                else
+                                {
+                                    nameLengthFlag += 1;
+                                    fName = nextLineArray[6 - yearMissingFlag] + nextLineArray[7 - yearMissingFlag];
+                                    if (fName.Contains(','))
+                                        fName = fName.Substring(0, fName.Length - 1);
+                                    year = Convert.ToInt32(nextLineArray[7 + nameLengthFlag - yearMissingFlag]);
+                                }
+                            }
+                            catch(Exception d)
+                            {
+                                year = 0;
                             }
                         }
                         nameLengthFlag = 0;
@@ -651,18 +682,25 @@ namespace TrackProject
                         }
                         catch (Exception e)
                         {
-                            if (nextLine2Array[7 - yearMissingFlag].Contains(")"))
+                            try
+                            {
+                                if (nextLine2Array[7 - yearMissingFlag].Contains(")"))
+                                {
+                                    year = 0;
+                                    yearMissingFlag += 1;
+                                }
+                                else
+                                {
+                                    nameLengthFlag = 1;
+                                    fName = nextLine2Array[6 - yearMissingFlag] + nextLine2Array[7 - yearMissingFlag];
+                                    if (fName.Contains(','))
+                                        fName = fName.Substring(0, fName.Length - 1);
+                                    year = Convert.ToInt32(nextLine2Array[7 + nameLengthFlag - yearMissingFlag]);
+                                }
+                            }
+                            catch(Exception d)
                             {
                                 year = 0;
-                                yearMissingFlag += 1;
-                            }
-                            else
-                            {
-                                nameLengthFlag = 1;
-                                fName = nextLine2Array[6 - yearMissingFlag] + nextLine2Array[7 - yearMissingFlag];
-                                if (fName.Contains(','))
-                                    fName = fName.Substring(0, fName.Length - 1);
-                                year = Convert.ToInt32(nextLine2Array[7 + nameLengthFlag - yearMissingFlag]);
                             }
                         }
                         nameLengthFlag = 0;
