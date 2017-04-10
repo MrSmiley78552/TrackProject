@@ -56,19 +56,19 @@ namespace TrackProject
 
         private void button1_Click(object sender, EventArgs e)
         {
-            PdfReader[] pdfArray = new PdfReader[1];
-            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
-            //pdfArray[1] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
-            //pdfArray[2] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
-            //pdfArray[3] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
-            //pdfArray[4] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
-            //pdfArray[5] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
-            //pdfArray[6] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
-            //pdfArray[7] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
+            PdfReader[] pdfArray = new PdfReader[8];
+            pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
+            pdfArray[1] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
+            pdfArray[2] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
+            pdfArray[3] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
+            pdfArray[4] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
+            pdfArray[5] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
+            pdfArray[6] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
+            pdfArray[7] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
             //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\Results - Full - 2017-03-31 EDC Indoor - Girls.pdf");
             //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\Results - Full - 2017-03-25 Fargo South v Fargo Davies JV Indoor - Girls-4.pdf");
             //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
-            pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\classaresults2-2.pdf");
+            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\classaresults2-2.pdf");
 
             foreach (var reader in pdfArray)
             {
@@ -449,456 +449,209 @@ namespace TrackProject
         }
 
         //gets the data from a relay for relay events
-        private void relayEvents(string line, int lineNumber, string [] lines)
+        private void relayEvents(string line, int lineNumber, string[] lines)
         {
+            place = -1;
+            string distance = "";
+            string time = "";
+            string[] currentLine = line.Split(' ');
+            string nextLine = "";
+            string nextLine2 = "";
+
+            Regex rgx = new Regex(@"\d{4}");
+            Match mat = rgx.Match(line);
+            string possibleDateInLine = mat.ToString();
             try
             {
-
-                string distance = "";
-                string time = "";
-                string[] currentLine = line.Split(' ');
-                string nextLine = "";
-                string nextLine2 = "";
-                int positionOfNames = 0;
-                Boolean nextLine2Exists = true;
-                int relayFlag = 0;
-                int seedFlag = 0;
-                int escapeFlag = 0;
-                int currentPlaceHolder = 0;
-
-                Regex rgx = new Regex(@"\d{4}");
-                Match mat = rgx.Match(line);
-                string possibleDateInLine = mat.ToString();
-
                 //checks to make sure there isn't a year in the result
                 //this helps for the state meet, where they list previous records
                 if (possibleDateInLine.Equals(""))
                 {
                     place = Convert.ToInt32(currentLine[0]);
+                    time = getTime(currentLine);
+                    Boolean runnersOnSecondLine = false;
 
-                    //sets the time achieved by the relay team
-                    if (areThereColumns == false)
-                    {
-                        if (currentColumnKeyWords.Contains("Relay"))
-                            relayFlag = 1;
-                        if (currentColumnKeyWords.Contains("Seed"))
-                            seedFlag = 1;
-                        int indexOfBlank = -1;
-                        while (currentLine.Contains("") && escapeFlag < 15)
-                        {
-                            for (int i = 0; i < currentLine.Length - 1; i++)
-                            {
-                                if (currentLine[i].Equals("") && i > 0)
-                                {
-                                    indexOfBlank = i;
-                                    break;
-                                }
-                            }
-                            if (indexOfBlank != 0)
-                            {
-                                for (int k = indexOfBlank; k < currentLine.Length - 1; k++)
-                                {
-                                    currentLine[k] = currentLine[k + 1];
-                                }
-                            }
-                            escapeFlag++;
-                        }
-
-                        if (currentLine.Contains("A") || currentLine.Contains("B") || currentLine.Contains("C") || currentLine.Contains("D") || currentLine.Contains("E"))
-                        {
-                            currentPlaceHolder = 1 + schoolNameLengthFlag + relayFlag + seedFlag;
-                            time = currentLine[currentPlaceHolder];
-                            if (time.Equals(""))
-                            {
-                                currentPlaceHolder = 1 + schoolNameLengthFlag + relayFlag + seedFlag - 1;
-                                time = currentLine[currentPlaceHolder];
-                            }
-                        }
-                        else
-                        {
-                            currentPlaceHolder = 1 + schoolNameLengthFlag + seedFlag;
-                            time = currentLine[currentPlaceHolder];
-                            if (time.Equals(""))
-                            {
-                                currentPlaceHolder = 1 + schoolNameLengthFlag + seedFlag - 1;
-                                time = currentLine[currentPlaceHolder];
-                            }
-                        }
-
-                        //time = currentLine[1 + schoolNameLengthFlag + currentColumnKeyWords.Length];
-                        if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("7") ||
-                            time.Equals("6") || time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
-                        {
-                            currentPlaceHolder = 1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 1;
-                            time = currentLine[currentPlaceHolder];
-                        }
-                    }
-                    else
-                    {
-                        currentPlaceHolder = 1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 2;
-                        time = currentLine[currentPlaceHolder];
-                        if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("7") ||
-                            time.Equals("6") || time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2") || time.Equals("1"))
-                        {
-                            currentPlaceHolder = 1 + schoolNameLengthFlag + currentColumnKeyWords.Length - 3;
-                            time = currentLine[currentPlaceHolder];
-                        }
-                    }
-                    if(time.Equals("A") || time.Equals("B") || time.Equals("C") || time.Equals("D") || time.Equals("E"))
-                    {
-                        time = currentLine[currentPlaceHolder + 1];
-                    }
-                    time = trimTimeOrDistance(time);
-
-                    if (areThereColumns == true)
+                    try
                     {
                         nextLine = lines[lineNumber + 1];
+                    }
+                    catch(Exception d)
+                    {
+                        nextLine = "";
+                    }
+                    int startOfRunner1 = nextLine.IndexOf("1)");
+                    int startOfRunner2 = nextLine.IndexOf("2)");
+                    int startOfRunner3 = nextLine.IndexOf("3)");
+                    int startOfRunner4 = nextLine.IndexOf("4)");
+
+                    //if true, we know that runners 3 and 4 are on the second line
+                    if (startOfRunner3 == -1 && startOfRunner4 == -1)
+                    {
+                        startOfRunner3 = nextLine2.IndexOf("3)");
+                        startOfRunner4 = nextLine2.IndexOf("4)");
                         nextLine2 = lines[lineNumber + 2];
-                        nextLine2Exists = true;
+                        runnersOnSecondLine = true;
+                    }
+
+                    //no runners were found
+                    if (startOfRunner1 == -1 && startOfRunner2 == -1 && startOfRunner3 == -1 && startOfRunner4 == -1)
+                    {
+                        handleRecord(time, distance, handleAthlete("", "", 0, schoolName), handleMeet(), booleanIfFinals);
                     }
                     else
                     {
-                        nextLine = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(lines[lineNumber + 1]));
-                        try
+                        string entireTextForRunner1 = "";
+                        string entireTextForRunner2 = "";
+                        string entireTextForRunner3 = "";
+                        string entireTextForRunner4 = "";
+                        entireTextForRunner1 = nextLine.Substring(startOfRunner1, startOfRunner2);
+                        //all runners on the same line
+                        if (runnersOnSecondLine == false)
                         {
-                            nextLine2 = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(lines[lineNumber + 2]));
+                            entireTextForRunner2 = nextLine.Substring(startOfRunner2, startOfRunner3 - startOfRunner2);
+                            entireTextForRunner3 = nextLine.Substring(startOfRunner3, startOfRunner4 - startOfRunner3);
+                            entireTextForRunner4 = nextLine.Substring(startOfRunner4, nextLine.Length - startOfRunner4);
                         }
-                        catch (Exception e)
+                        else //runners on two lines
                         {
-                            nextLine2Exists = false;
+                            entireTextForRunner2 = nextLine.Substring(startOfRunner2, nextLine.Length - startOfRunner2);
+                            entireTextForRunner3 = nextLine2.Substring(startOfRunner3, startOfRunner4 - startOfRunner3);
+                            entireTextForRunner4 = nextLine2.Substring(startOfRunner4, nextLine2.Length - startOfRunner4);
+                        }
+                        int extraPosition;
+                        string[] allTextForAllRunners = { entireTextForRunner1, entireTextForRunner2, entireTextForRunner3, entireTextForRunner4 };
+                        foreach (var currentRunnerText in allTextForAllRunners)
+                        {
+                            extraPosition = 0;
+                            string[] currentRunnerTextSplit = currentRunnerText.Split(' ');
+                            //check to make sure it has a name in it. Otherwise skip that runner
+                            if (currentRunnerTextSplit.Length > 2)
+                            {
+                                //Resizes the array to get rid of the 1), 2), 3), 4)
+                                if (currentRunnerTextSplit[0].Contains(')'))
+                                {
+                                    string[] temp = new string[currentRunnerTextSplit.Length - 1];
+                                    for (int i = 0; i < currentRunnerTextSplit.Length - 1; i++)
+                                    {
+                                        temp[i] = currentRunnerTextSplit[i + 1];
+                                    }
+                                    currentRunnerTextSplit = temp;
+                                    extraPosition++;
+                                }
+                                int spaceCounter = 0;
+                                foreach(var cell in currentRunnerTextSplit)
+                                {
+                                    if (cell.Equals("") || cell.Equals(" "))
+                                        spaceCounter++;
+                                }
+                                //Sets the year value and resizes the array if it contained a year
+                                if (int.TryParse(currentRunnerTextSplit[currentRunnerTextSplit.Length - spaceCounter - extraPosition], out year))
+                                {
+                                    string[] temp = new string[currentRunnerTextSplit.Length - spaceCounter - extraPosition];
+                                    for (int i = 0; i < currentRunnerTextSplit.Length - spaceCounter - extraPosition; i++)
+                                    {
+                                        temp[i] = currentRunnerTextSplit[i];
+                                    }
+                                    currentRunnerTextSplit = temp;
+                                }
+                                else //if no year in the array, set it to the default year value
+                                {
+                                    year = 0;
+                                }
+                                getFirstAndLastNames(currentRunnerTextSplit); //sets the fName and lName variables
+                                handleRecord(time, distance, handleAthlete(fName, lName, year, schoolName), handleMeet(), booleanIfFinals);
+                            }
                         }
                     }
-                    if (nextLine2Exists == true && nextLine2.Contains("3)"))
-                    {
-                        int nameLengthFlag = 0;
-                        int yearMissingFlag = 0;
-                        string[] nextLineArray = nextLine.Split(' ');
-                        string[] nextLine2Array = nextLine2.Split(' ');
-                        //if this is true, then the lName comes before the fName in the    lName, fName   format
-                        if (nextLineArray[1].Contains(','))
-                        {
-                            positionOfNames = 1;
-                        }
-                        //first athlete
-                        lName = nextLineArray[2 - positionOfNames].Replace(",", "");
-                        fName = nextLineArray[1 + positionOfNames];
-                        //this will test if the name is longer by trying to convert the next position to an int.
-                        //if the name is confirmed to be only 2 long, it will do nothing
-                        try
-                        {
-                            year = Convert.ToInt32(nextLineArray[3]);
-                        }
-                        catch (Exception e)
-                        {
-                            if (nextLineArray[3].Contains(")"))
-                            {
-                                year = 0;
-                                yearMissingFlag = 1;
-                            }
-                            else
-                            {
-                                nameLengthFlag = 1;
-                                fName = nextLineArray[2] + nextLineArray[3];
-                                if (fName.Contains(','))
-                                    fName = fName.Substring(0, fName.Length - 1);
-                                year = Convert.ToInt32(nextLineArray[3 + nameLengthFlag]);
-                            }
-                        }
-                        nameLengthFlag = 0;
-                        //add to sql
-                        int aId = handleAthlete(fName, lName, year, schoolName);
-                        int mId = handleMeet();
-                        handleRecord(time, distance, aId, mId, booleanIfFinals);
-                        //------------------------------------------------
-                        //second athlete
-                        lName = nextLineArray[6 - positionOfNames - yearMissingFlag].Replace(",", "");
-                        fName = nextLineArray[5 + positionOfNames - yearMissingFlag];
-                        try
-                        {
-                            year = Convert.ToInt32(nextLineArray[7 - yearMissingFlag]);
-                        }
-                        catch (Exception e)
-                        {
-                            try
-                            {
-                                if (nextLineArray[7 - yearMissingFlag].Contains(")"))
-                                    year = 0;
-                                else
-                                {
-                                    nameLengthFlag += 1;
-                                    fName = nextLineArray[6 - yearMissingFlag] + nextLineArray[7 - yearMissingFlag];
-                                    if (fName.Contains(','))
-                                        fName = fName.Substring(0, fName.Length - 1);
-                                    year = Convert.ToInt32(nextLineArray[7 + nameLengthFlag - yearMissingFlag]);
-                                }
-                            }
-                            catch(Exception d)
-                            {
-                                year = 0;
-                            }
-                        }
-                        nameLengthFlag = 0;
-                        //add to sql
-                        aId = handleAthlete(fName, lName, year, schoolName);
-                        mId = handleMeet();
-                        handleRecord(time, distance, aId, mId, booleanIfFinals);
-                        //------------------------------------------------
-                        //third athlete
-                        yearMissingFlag = 0; //since we are moving to a new row
-                        lName = nextLine2Array[2 - positionOfNames].Replace(",", "");
-                        fName = nextLine2Array[1 + positionOfNames];
-                        try
-                        {
-                            year = Convert.ToInt32(nextLine2Array[3]);
-                        }
-                        catch (Exception e)
-                        {
-                            if (nextLine2Array[3].Contains(")"))
-                            {
-                                year = 0;
-                                yearMissingFlag = 1;
-                            }
-                            else
-                            {
-                                nameLengthFlag = 1;
-                                fName = nextLine2Array[2] + nextLine2Array[3];
-                                if (fName.Contains(','))
-                                    fName = fName.Substring(0, fName.Length - 1);
-                                year = Convert.ToInt32(nextLine2Array[3 + nameLengthFlag]);
-                            }
-                        }
-                        nameLengthFlag = 0;
-                        //add to sql
-                        aId = handleAthlete(fName, lName, year, schoolName);
-                        mId = handleMeet();
-                        handleRecord(time, distance, aId, mId, booleanIfFinals);
-                        //------------------------------------------------
-                        //fourth athlete
-                        lName = nextLine2Array[6 - positionOfNames - yearMissingFlag].Replace(",", "");
-                        fName = nextLine2Array[5 + positionOfNames - yearMissingFlag];
-                        try
-                        {
-                            year = Convert.ToInt32(nextLine2Array[7 - yearMissingFlag]);
-                        }
-                        catch (Exception e)
-                        {
-                            try
-                            {
-                                if (nextLine2Array[7 - yearMissingFlag].Contains(")"))
-                                {
-                                    year = 0;
-                                    yearMissingFlag += 1;
-                                }
-                                else
-                                {
-                                    nameLengthFlag = 1;
-                                    fName = nextLine2Array[6 - yearMissingFlag] + nextLine2Array[7 - yearMissingFlag];
-                                    if (fName.Contains(','))
-                                        fName = fName.Substring(0, fName.Length - 1);
-                                    year = Convert.ToInt32(nextLine2Array[7 + nameLengthFlag - yearMissingFlag]);
-                                }
-                            }
-                            catch(Exception d)
-                            {
-                                year = 0;
-                            }
-                        }
-                        nameLengthFlag = 0;
-                        //add to sql
-                        aId = handleAthlete(fName, lName, year, schoolName);
-                        mId = handleMeet();
-                        handleRecord(time, distance, aId, mId, booleanIfFinals);
-                        yearMissingFlag = 0;
-                    }
-                    else
-                    {
-                        int yearMissingFlag = 0;
-                        string[] nextLineArray = nextLine.Split(' ');
-                        int nameLengthFlag = 0;
-
-                        //if this is true, then the lName comes before the fName in the    lName, fName   format
-                        if (nextLineArray[1].Contains(','))
-                        {
-                            positionOfNames = 1;
-                        }
-
-                        //first athlete
-                        try
-                        {
-                            lName = nextLineArray[2 - positionOfNames].Replace(",", "");
-                            fName = nextLineArray[1 + positionOfNames];
-                        }
-                        catch (Exception e)
-                        {
-                            lName = "";
-                            fName = "";
-                        }
-                        try
-                        {
-                            year = Convert.ToInt32(nextLineArray[3]);
-                        }
-                        catch (Exception e)
-                        {
-                            if (!lName.Equals(""))
-                            {
-                                if (nextLineArray[3].Contains(")"))
-                                {
-                                    year = 0;
-                                    yearMissingFlag = 1;
-                                }
-                                else
-                                {
-                                    nameLengthFlag = 1;
-                                    fName = nextLineArray[2] + nextLineArray[3];
-                                    if (fName.Contains(','))
-                                        fName = fName.Substring(0, fName.Length - 1);
-                                    year = Convert.ToInt32(nextLineArray[3 + nameLengthFlag]);
-                                }
-                            }
-                            else
-                                year = 0;
-                        }
-                        nameLengthFlag = 0;
-                        //add to sql
-                        int aId = handleAthlete(fName, lName, year, schoolName);
-                        int mId = handleMeet();
-                        handleRecord(time, distance, aId, mId, booleanIfFinals);
-                        //------------------------------------------------
-                        //second athlete
-                        try
-                        {
-                            lName = nextLineArray[6 - positionOfNames - yearMissingFlag].Replace(",", "");
-                            fName = nextLineArray[5 + positionOfNames - yearMissingFlag];
-                        }
-                        catch (Exception e)
-                        {
-                            lName = "";
-                            fName = "";
-                        }
-
-                        try
-                        {
-                            year = Convert.ToInt32(nextLineArray[7 - yearMissingFlag]);
-                        }
-                        catch (Exception e)
-                        {
-                            if (!lName.Equals(""))
-                            {
-                                if (nextLineArray[7 - yearMissingFlag].Contains(")"))
-                                {
-                                    year = 0;
-                                    yearMissingFlag += 1;
-                                }
-                                else
-                                {
-                                    nameLengthFlag = 1;
-                                    fName = nextLineArray[6 - yearMissingFlag] + nextLineArray[7 - yearMissingFlag];
-                                    if (fName.Contains(','))
-                                        fName = fName.Substring(0, fName.Length - 1);
-                                    year = Convert.ToInt32(nextLineArray[7 + nameLengthFlag - yearMissingFlag]);
-                                }
-                            }
-                            else
-                                year = 0;
-                        }
-                        nameLengthFlag = 0;
-                        //add to sql
-                        aId = handleAthlete(fName, lName, year, schoolName);
-                        mId = handleMeet();
-                        handleRecord(time, distance, aId, mId, booleanIfFinals);
-                        //------------------------------------------------
-                        //third athlete
-                        try
-                        {
-                            lName = nextLineArray[10 - positionOfNames - yearMissingFlag].Replace(",", "");
-                            fName = nextLineArray[9 + positionOfNames - yearMissingFlag];
-                        }
-                        catch (Exception e)
-                        {
-                            lName = "";
-                            fName = "";
-                        }
-                        try
-                        {
-                            year = Convert.ToInt32(nextLineArray[11 - yearMissingFlag]);
-                        }
-                        catch (Exception e)
-                        {
-                            if (!lName.Equals(""))
-                            {
-                                if (nextLineArray[11 - yearMissingFlag].Contains(")"))
-                                {
-                                    year = 0;
-                                    yearMissingFlag += 1;
-                                }
-                                else
-                                {
-                                    nameLengthFlag = 1;
-                                    fName = nextLineArray[10 - yearMissingFlag] + nextLineArray[11 - yearMissingFlag];
-                                    if (fName.Contains(','))
-                                        fName = fName.Substring(0, fName.Length - 1);
-                                    year = Convert.ToInt32(nextLineArray[11 + nameLengthFlag - yearMissingFlag]);
-                                }
-                            }
-                            else
-                                year = 0;
-                        }
-                        nameLengthFlag = 0;
-                        //add to sql
-                        aId = handleAthlete(fName, lName, year, schoolName);
-                        mId = handleMeet();
-                        handleRecord(time, distance, aId, mId, booleanIfFinals);
-                        //------------------------------------------------
-                        //fourth athlete
-                        try
-                        {
-                            lName = nextLineArray[14 - positionOfNames - yearMissingFlag].Replace(",", "");
-                            fName = nextLineArray[13 + positionOfNames - yearMissingFlag];
-                        }
-                        catch (Exception e)
-                        {
-                            lName = "";
-                            fName = "";
-                        }
-                        try
-                        {
-                            year = Convert.ToInt32(nextLineArray[15 - yearMissingFlag]);
-                        }
-                        catch (Exception e)
-                        {
-                            if (!lName.Equals(""))
-                            {
-                                if (nextLineArray[15 - yearMissingFlag].Contains(")"))
-                                {
-                                    year = 0;
-                                    yearMissingFlag += 1;
-                                }
-                                else
-                                {
-                                    nameLengthFlag = 1;
-                                    fName = nextLineArray[14 - yearMissingFlag] + nextLineArray[15 - yearMissingFlag];
-                                    if (fName.Contains(','))
-                                        fName = fName.Substring(0, fName.Length - 1);
-                                    year = Convert.ToInt32(nextLineArray[15 + nameLengthFlag - yearMissingFlag]);
-                                }
-                            }
-                            else
-                                year = 0;
-                        }
-                        nameLengthFlag = 0;
-                        //add to sql
-                        aId = handleAthlete(fName, lName, year, schoolName);
-                        mId = handleMeet();
-                        handleRecord(time, distance, aId, mId, booleanIfFinals);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                relayErrorCount++;
-            }
                     //figure out how to store the captured information, so that a user can enter the athlete's names later
                     //problem originally arose from the 2015 EDC Results
+                }
+            }
+            catch(Exception e)
+            {
+                handleRecord(time, distance, handleAthlete("", "", 0, schoolName), handleMeet(), booleanIfFinals);
+            }
+        }
+
+        private string getTime(string[] line)
+        {
+            List<string> possibleTimes = new List<string>();
+            for(int i = 1; i < line.Length; i++)
+            {
+                if((line[i].Contains(":") || line[i].Contains(".")) && line[i].Length > 4)
+                {
+                    possibleTimes.Add(line[i]);
+                }
+            }
+            string[] possibleTimesArray = possibleTimes.ToArray();
+            if (possibleTimesArray.Length > 1)
+            {
+                if (Array.FindIndex(currentColumnKeyWords, isSeed) < Array.FindIndex(currentColumnKeyWords, isFinals))
+                    return trimTimeOrDistance(possibleTimesArray[1]);
+                else
+                    return trimTimeOrDistance(possibleTimesArray[0]);
+            }
+            else
+                return trimTimeOrDistance(possibleTimesArray[0]);
+        }
+
+        private static bool isSeed(string s)
+        {
+            if (s.Equals("Seed"))
+                return true;
+            return false;
+        }
+        private static bool isFinals(string s)
+        {
+            if (s.Equals("Finals"))
+                return true;
+            return false;
+        }
+
+        private void getFirstAndLastNames(string[] allText)
+        {
+            lName = "";
+            fName = "";
+            //check for all lName+, fName+
+            for(int i = 0; i < allText.Length; i++)
+            {
+                if(allText[i].Contains(','))
+                {
+                    for(int j = 0; j <= i; j++)
+                    {
+                        lName += allText[j] + " ";
+                    }
+                    for(int k = i+1; k < allText.Length; k++)
+                    {
+                        fName += allText[k] + " ";
+                    }
+                    break;
+                }
+            }
+            if(!lName.Equals("") && !fName.Equals(""))
+            {
+                lName = lName.Substring(0, lName.Length - 2); //gets rid of last space and comma
+                fName = fName.Substring(0, fName.Length - 1); //gets rid of extra space
+            }
+            else if(allText.Length == 2) //assume fName lName
+            {
+                fName = allText[0];
+                lName = allText[1];
+            }
+            else if(allText.Length == 3) //assume fName fName lName
+            {
+                fName = allText[0] + " " + allText[1];
+                lName = allText[2];
+            }
+            else //assume fName fName lName ... lName
+            {
+                fName = allText[0] + " " + allText[1];
+                for (int i = 2; i < allText.Length; i++)
+                {
+                    lName += allText[i] + " ";
+                }
+                lName = lName.Substring(0, lName.Length); //gets rid of extra space
+            }
         }
 
         //gets the data from a line for single events
@@ -1066,19 +819,44 @@ namespace TrackProject
 
         private string trimTimeOrDistance(string mark)
         {
-            char[] lettersToCheckFor = { 'Q', 'x', 'J', 'X', 'D', 'q', 'B', '!' };
-            foreach(var letter in lettersToCheckFor)
+            char[] markChars = mark.ToCharArray();
+            if(!(mark.Contains('.') || mark.Contains(':') || mark.Contains('-')))
             {
-                if(mark.Contains(letter))
+                return "";
+            }
+            for(int i = 0; i < markChars.Length; i++)
+            {
+                if(!(markChars[i].Equals('0') || markChars[i].Equals('1') || markChars[i].Equals('2') || 
+                    markChars[i].Equals('3') || markChars[i].Equals('4') || markChars[i].Equals('5') || 
+                    markChars[i].Equals('6') || markChars[i].Equals('7') || markChars[i].Equals('8') || 
+                    markChars[i].Equals('9') || markChars[i].Equals('.') || markChars[i].Equals(':') || 
+                    markChars[i].Equals('-')))
                 {
-                    int indexOfLetter = mark.IndexOf(letter);
-                    if ((letter.Equals('Q') || letter.Equals('q')) && indexOfLetter != -1)
-                        mark = mark.Substring(0, indexOfLetter);
-                    else if (indexOfLetter != -1)
-                        mark = mark.Substring(indexOfLetter + 1, mark.Length - (indexOfLetter + 1));
+                    if (i < markChars.Length / 2)
+                    {
+                        return mark.Substring(1);
+                    }
+                    else
+                    {
+                        return mark.Substring(0, i);
+                    }
                 }
             }
             return mark;
+            
+            //char[] lettersToCheckFor = { 'Q', 'x', 'J', 'X', 'D', 'q', 'B', '!' };
+            //foreach(var letter in lettersToCheckFor)
+            //{
+            //    if(mark.Contains(letter))
+            //    {
+            //        int indexOfLetter = mark.IndexOf(letter);
+            //        if ((letter.Equals('Q') || letter.Equals('q') || letter.Equals('!') || letter.Equals('B')) && indexOfLetter != -1)
+            //            mark = mark.Substring(0, indexOfLetter);
+            //        else if (indexOfLetter != -1)
+            //            mark = mark.Substring(indexOfLetter + 1, mark.Length - (indexOfLetter + 1));
+            //    }
+            //}
+            //return mark;
         }
 
         private void handleRecord(string time, string distance, int aId, int mId, int booleanIfFinals)
