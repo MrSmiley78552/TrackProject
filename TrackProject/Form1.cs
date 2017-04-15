@@ -50,8 +50,9 @@ namespace TrackProject
         string fileForTemporaryPDFs = @"C:\Users\Mitchell\Desktop\TrackProject\tempFileForMultiColumnPDFs.txt";
         Boolean areThereColumns = false;
         string[] memberSchools;
-        string schoolName;
+        static string schoolName;
         int relayErrorCount = 0;
+        int startOfSchoolPosition;
 
 
         private void button1_Click(object sender, EventArgs e)
@@ -373,6 +374,7 @@ namespace TrackProject
                                     {
                                         schoolName = school;
                                         schoolNameLengthFlag = tempSchool.Length;
+                                        startOfSchoolPosition = i - schoolNameLengthFlag + 1;
                                         return true;
                                     }
                                 }
@@ -468,7 +470,7 @@ namespace TrackProject
                 if (possibleDateInLine.Equals(""))
                 {
                     place = Convert.ToInt32(currentLine[0]);
-                    time = getTime(currentLine);
+                    time = getTimeOrDistance(currentLine);
                     Boolean runnersOnSecondLine = false;
 
                     try
@@ -573,26 +575,29 @@ namespace TrackProject
             }
         }
 
-        private string getTime(string[] line)
+        private string getTimeOrDistance(string[] line)
         {
             List<string> possibleTimes = new List<string>();
             for(int i = 1; i < line.Length; i++)
             {
-                if((line[i].Contains(":") || line[i].Contains(".")) && line[i].Length > 4)
+                //preferably using matching regex here to make sure there are numbers before or after punctuation
+                if((line[i].Contains(":") || line[i].Contains(".") || line[i].Contains("-")) && line[i].Length >= 4)
                 {
-                    possibleTimes.Add(line[i]);
+                        possibleTimes.Add(line[i]);
                 }
             }
             string[] possibleTimesArray = possibleTimes.ToArray();
             if (possibleTimesArray.Length > 1)
             {
                 if (Array.FindIndex(currentColumnKeyWords, isSeed) < Array.FindIndex(currentColumnKeyWords, isFinals))
+                {
                     return trimTimeOrDistance(possibleTimesArray[1]);
+                }
                 else
                     return trimTimeOrDistance(possibleTimesArray[0]);
             }
             else
-                return trimTimeOrDistance(possibleTimesArray[0]);
+                return trimTimeOrDistance(time);
         }
 
         private static bool isSeed(string s)
@@ -654,6 +659,13 @@ namespace TrackProject
             }
         }
 
+        private static bool isSchool(string s)
+        {
+            if (s.Equals(schoolName.Split(' ')[0]))
+                return true;
+            return false;
+        }
+
         //gets the data from a line for single events
         private void singleEvents(string line)
         {
@@ -671,150 +683,236 @@ namespace TrackProject
             string alternateLName = "";
             int alternateNameLengthFlag = 0;
 
-            for(int i = 0; i < temp.Length -1; i++)
-            {
-                if (temp[i].Equals("") && i > 0)
-                {
-                    indexOfBlank = i;
-                    break;
-                }
-            }
-            if(indexOfBlank != 0)
-            {
-                for (int k = indexOfBlank; k < temp.Length - 1; k++)
-                {
-                    temp[k] = temp[k+1];
-                }
-            }
-
-            //sets the place the athlete got
+            
+            //--------------------------------------
+            int positionOfMemberSchool = startOfSchoolPosition;
+            //gets the place of the athlete
             try
             {
                 place = Convert.ToInt32(temp[0]);
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 place = -1;
             }
-
-            //checks for Name and it's length
-            if (currentColumnKeyWords.Contains("Name"))
+            string[] arrayOfTimesAndDistances = new string[temp.Length - startOfSchoolPosition - schoolNameLengthFlag];
+            int counter = 0;
+            for(int i = startOfSchoolPosition + schoolNameLengthFlag; i < temp.Length; i++)
             {
-                int nameFormat = -1;
-                //checks for a   lName, fName   format
-                if(temp[1].Contains(','))
-                {
-                    lName = temp[1].Substring(0, (temp[1].Length - 1));
-                    fName = temp[2];
-                    nameLengthFlag = 2;
-                    nameFormat = 0;
-                }
-                //works for a   fName lName   format
+                arrayOfTimesAndDistances[counter++] = temp[i];
+            }
+            if(place != -1)
+            {
+                //gets the time or distance achieved
+                if (fieldEvents.Contains(trackOrFieldEvent))
+                    distance = getTimeOrDistance(arrayOfTimesAndDistances);
                 else
+                    time = getTimeOrDistance(arrayOfTimesAndDistances);
+            }
+            if (time.Length >= 10)
+            {
+                for (int j = 0; j < time.Length; j++)
                 {
-                    fName = temp[1];
-                    lName = temp[2];
-                    nameLengthFlag = 2;
-                    nameFormat = 1;
-                }
-                //this will test if the name is longer by trying to convert the next position to an int.
-                //if the name is confirmed to be only 2 long, it will do nothing
-                if (temp[2].Contains(','))
-                {
-                    lName = temp[1] + temp[2];
-                    lName = lName.Substring(0, lName.Length - 1);
-                    fName = temp[3];
-                    nameLengthFlag = 3;
-                }
-                else if(temp[3].Contains(','))
-                {
-                    lName = temp[1] + temp[2] + temp[3];
-                    lName = lName.Substring(0, lName.Length - 1);
-                    fName = temp[4];
-                    nameLengthFlag = 4;
-                }
-                else if(temp[1].Contains(','))
-                {
-                    alternateLName = temp[1];
-                    alternateFName = temp[2] + temp[3];
-                    alternateNameLengthFlag = 3;
+                    if (!time.Equals('1') || !time.Equals('2') || !time.Equals('3') ||
+                        !time.Equals('4') || !time.Equals('5') || !time.Equals('6') ||
+                        !time.Equals('7') || !time.Equals('8') || !time.Equals('9') ||
+                        !time.Equals('-') || !time.Equals('.') || !time.Equals(':') || !time.Equals('0'))
+                    {
+                        time = time.Substring(j, time.Length - j);
+                    }
                 }
             }
-            if(fName.Equals("Naomi") && lName.Equals("Gross"))
+            else if(distance.Length >= 10)
             {
-                int test = 0;
-            }
-            //check for Yr and its length
-            if(currentColumnKeyWords.Contains("Yr"))
-            {
-                try
+                for(int j = 0; j < distance.Length; j++)
                 {
-                    year = Convert.ToInt32(temp[1 + nameLengthFlag]);
+                    if (!distance.Equals('1') || !distance.Equals('2') || !distance.Equals('3') ||
+                       !distance.Equals('4') || !distance.Equals('5') || !distance.Equals('6') ||
+                       !distance.Equals('7') || !distance.Equals('8') || !distance.Equals('9') ||
+                       !distance.Equals('-') || !distance.Equals('.') || !distance.Equals(':') || !distance.Equals('0'))
+                    {
+                        distance = distance.Substring(j, distance.Length - j);
+                    }
                 }
-                catch(Exception e)
-                {
-                    year = 0;
-                }
-                yearLengthFlag = 1;
-            }
-
-
-            //already found the length of the school name in method---memberOfFargoDavies
-
-
-            if (currentColumnKeyWords.Contains("Seed"))
-                seedLengthFlag = 1;
-
-            if (currentColumnKeyWords.Contains("Prelims"))
-                prelimsLengthFlag = 1;
-
-            if (currentColumnKeyWords.Contains("Finals"))
-                finalsLengthFlag = 1;
-
-            string alternateDistance = "";
-            string alternateTime = "";
-            //checks if a track event or a field event and records the time or distance respectively
-            if (fieldEvents.Contains(trackOrFieldEvent))
-            {
-                distance = temp[ nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
-                try
-                {
-                    alternateDistance = temp[alternateNameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
-                }
-                catch(Exception e)
-                { }
-                if (distance.Equals("") || distance.Equals(" ") || distance.Equals("  ") || distance.Equals("10") || distance.Equals("8") || distance.Equals("6") || distance.Equals("4.5") ||
-                    distance.Equals("5") || distance.Equals("4") || distance.Equals("3") || distance.Equals("2.5") || distance.Equals("2") || distance.Equals("1.5") || distance.Equals("1"))
-                    distance = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
-                distance = trimTimeOrDistance(distance);
-                if (!distance.Contains(".") && !distance.Contains("-"))
-                {
-                    distance = trimTimeOrDistance(alternateDistance);
-                }
-                time = "";
-            }
-            else
-            {
-                time = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
-                try
-                {
-                    alternateTime = temp[alternateNameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
-                }
-                catch(Exception e)
-                { }
-                if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") || time.Equals("4.5") ||
-                    time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2.5") || time.Equals("2") || time.Equals("1.5") || time.Equals("1"))
-                    time = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
-                time = trimTimeOrDistance(time);
-                if (!time.Contains('.'))
-                {
-                    time = trimTimeOrDistance(alternateTime);
-                }
-                distance = "";
             }
             
-            int aId = handleAthlete(fName, lName, year, schoolName);
-            int mId = handleMeet();
-            handleRecord(time, distance, aId, mId, booleanIfFinals);
+            //puts together the nameArray, which is used to get the first and last names
+            string[] leadingArray = new string[startOfSchoolPosition - 1];
+            string[] nameArray;
+            for (int i = 1; i < startOfSchoolPosition; i++)
+            {
+                leadingArray[i - 1] = temp[i];
+            }
+            try
+            {
+                int year = Convert.ToInt32(leadingArray[leadingArray.Length - 1]);
+                nameArray = new string[leadingArray.Length - 1];
+                for (int i = 0; i < leadingArray.Length - 1; i++)
+                {
+                    nameArray[i] = leadingArray[i];
+                }
+            }
+            catch (Exception d)
+            {
+                year = 0;
+                nameArray = leadingArray;
+            }
+            getFirstAndLastNames(nameArray);
+            handleRecord(time, distance, handleAthlete(fName, lName, year, schoolName), handleMeet(), booleanIfFinals);
+            //--------------------------------------
+
+
+            //for (int i = 0; i < temp.Length - 1; i++)
+            //{
+            //    if (temp[i].Equals("") && i > 0)
+            //    {
+            //        indexOfBlank = i;
+            //        break;
+            //    }
+            //}
+            //if (indexOfBlank != 0)
+            //{
+            //    for (int k = indexOfBlank; k < temp.Length - 1; k++)
+            //    {
+            //        temp[k] = temp[k + 1];
+            //    }
+            //}
+
+            ////sets the place the athlete got
+            //try
+            //{
+            //    place = Convert.ToInt32(temp[0]);
+            //}
+            //catch (Exception e)
+            //{
+            //    place = -1;
+            //}
+
+            ////checks for Name and it's length
+            //if (currentColumnKeyWords.Contains("Name"))
+            //{
+            //    int nameFormat = -1;
+            //    //checks for a   lName, fName   format
+            //    if (temp[1].Contains(','))
+            //    {
+            //        lName = temp[1].Substring(0, (temp[1].Length - 1));
+            //        fName = temp[2];
+            //        nameLengthFlag = 2;
+            //        nameFormat = 0;
+            //    }
+            //    //works for a   fName lName   format
+            //    else
+            //    {
+            //        fName = temp[1];
+            //        lName = temp[2];
+            //        nameLengthFlag = 2;
+            //        nameFormat = 1;
+            //    }
+            //    //this will test if the name is longer by trying to convert the next position to an int.
+            //    //if the name is confirmed to be only 2 long, it will do nothing
+            //    if (temp[2].Contains(','))
+            //    {
+            //        lName = temp[1] + temp[2];
+            //        lName = lName.Substring(0, lName.Length - 1);
+            //        fName = temp[3];
+            //        nameLengthFlag = 3;
+            //    }
+            //    else if (temp[3].Contains(','))
+            //    {
+            //        lName = temp[1] + temp[2] + temp[3];
+            //        lName = lName.Substring(0, lName.Length - 1);
+            //        fName = temp[4];
+            //        nameLengthFlag = 4;
+            //    }
+            //    else if (temp[1].Contains(','))
+            //    {
+            //        alternateLName = temp[1];
+            //        alternateFName = temp[2] + temp[3];
+            //        alternateNameLengthFlag = 3;
+            //    }
+            //}
+
+            ////check for Yr and its length
+            //if (currentColumnKeyWords.Contains("Yr"))
+            //{
+            //    try
+            //    {
+            //        year = Convert.ToInt32(temp[1 + nameLengthFlag]);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        year = 0;
+            //    }
+            //    yearLengthFlag = 1;
+            //}
+
+
+            ////already found the length of the school name in method---memberOfFargoDavies
+
+
+            //if (currentColumnKeyWords.Contains("Seed"))
+            //    seedLengthFlag = 1;
+
+            //if (currentColumnKeyWords.Contains("Prelims"))
+            //    prelimsLengthFlag = 1;
+
+            //if (currentColumnKeyWords.Contains("Finals"))
+            //    finalsLengthFlag = 1;
+
+            //string alternateDistance = "";
+            //string alternateTime = "";
+            ////checks if a track event or a field event and records the time or distance respectively
+            //if (fieldEvents.Contains(trackOrFieldEvent))
+            //{
+            //    distance = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
+            //    try
+            //    {
+            //        alternateDistance = temp[alternateNameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
+            //    }
+            //    catch (Exception e)
+            //    { }
+            //    if (distance.Equals("") || distance.Equals(" ") || distance.Equals("  ") || distance.Equals("10") || distance.Equals("8") || distance.Equals("6") || distance.Equals("4.5") ||
+            //        distance.Equals("5") || distance.Equals("4") || distance.Equals("3") || distance.Equals("2.5") || distance.Equals("2") || distance.Equals("1.5") || distance.Equals("1"))
+            //        distance = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
+            //    distance = trimTimeOrDistance(distance);
+            //    if (!distance.Contains(".") && !distance.Contains("-"))
+            //    {
+            //        distance = trimTimeOrDistance(alternateDistance);
+            //    }
+            //    time = "";
+            //}
+            //else
+            //{
+            //    time = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
+            //    try
+            //    {
+            //        alternateTime = temp[alternateNameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag];
+            //    }
+            //    catch (Exception e)
+            //    { }
+            //    if (time.Equals("") || time.Equals(" ") || time.Equals("  ") || time.Equals("10") || time.Equals("8") || time.Equals("6") || time.Equals("4.5") ||
+            //        time.Equals("5") || time.Equals("4") || time.Equals("3") || time.Equals("2.5") || time.Equals("2") || time.Equals("1.5") || time.Equals("1"))
+            //        time = temp[nameLengthFlag + yearLengthFlag + schoolNameLengthFlag + seedLengthFlag + finalsLengthFlag + prelimsLengthFlag - 1];
+            //    time = trimTimeOrDistance(time);
+            //    if (!time.Contains('.'))
+            //    {
+            //        time = trimTimeOrDistance(alternateTime);
+            //    }
+            //    distance = "";
+            //}
+
+            //int aId = handleAthlete(fName, lName, year, schoolName);
+            //if(aId == 71098)
+            //{
+            //    int t = 0;
+            //}
+            //if(place == -1)
+            //{
+            //    time = "";
+            //    distance = "";
+            //}
+            //int mId = handleMeet();
+            //handleRecord(time, distance, aId, mId, booleanIfFinals);
         }
 
         private string trimTimeOrDistance(string mark)
