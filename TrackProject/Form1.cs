@@ -940,12 +940,13 @@ namespace TrackProject
 
         private void handleRecord(string time, string distance, int aId, int mId, int booleanIfFinals)
         {
+            decimal newTime = convertStringTimeToIntTime(time);
             if (checkForDuplicateRecord(time, distance, aId, mId, booleanIfFinals) == 0)
             {
                 //adds a record which is connected to the Athlete
                 cmd = new SqlCommand("INSERT INTO Record (time, distance, aId, mId, place, event, finals) VALUES (@time, @distance, @aId, @mId, @place, @event, @finals)", con);
 
-                cmd.Parameters.AddWithValue("@time", time);
+                cmd.Parameters.AddWithValue("@time", newTime);
                 cmd.Parameters.AddWithValue("@distance", distance);
 
                 cmd.Parameters.AddWithValue("@aId", aId);
@@ -955,6 +956,22 @@ namespace TrackProject
                 cmd.Parameters.AddWithValue("@finals", booleanIfFinals);
                 cmd.ExecuteNonQuery();
             }
+        }
+
+        private decimal convertStringTimeToIntTime(string time)
+        {
+            decimal newTime = 0;
+            char[] delimiters = new char[] { ':', '.' };
+            string[] parts = time.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
+            if(parts.Length == 3)
+            {
+                newTime = Convert.ToDecimal(parts[0]) * 60 + Convert.ToDecimal(parts[1]) + (Convert.ToDecimal(parts[2]) / 100);
+            }
+            else if(parts.Length == 2)
+            {
+                newTime = Convert.ToDecimal(parts[0]) + (Convert.ToDecimal(parts[1]) / 100);
+            }
+            return newTime;         
         }
         private int handleMeet()
         {
