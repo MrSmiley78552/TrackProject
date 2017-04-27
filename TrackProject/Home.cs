@@ -217,7 +217,7 @@ namespace TrackProject
             SqlConnection conn = new SqlConnection(ssConnectionString);
             conn.Open();
             SqlCommand command = conn.CreateCommand();
-            command.CommandText = "SELECT TOP 10 * FROM Record ORDER BY aId DESC";
+            command.CommandText = "SELECT TOP 10 * FROM Record ORDER BY time DESC";
             command.CommandType = CommandType.Text;
             command.Connection = conn;
             sqlReader = command.ExecuteReader();
@@ -225,7 +225,7 @@ namespace TrackProject
             {
                 while (sqlReader.Read())
                 {
-                    var listViewItem = new ListViewItem(Convert.ToString(sqlReader.GetInt32(3)));
+                    var listViewItem = new ListViewItem(Convert.ToString(sqlReader.GetDecimal(1)));
                     athletesListView.Items.Add(listViewItem);
                 }
                 sqlReader.Close();
