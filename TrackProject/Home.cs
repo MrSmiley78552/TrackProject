@@ -210,6 +210,7 @@ namespace TrackProject
 
         private void button1_Click(object sender, EventArgs e)
         {
+            string eventType = "300 Meter Hurdles";
             SqlDataReader sqlReader;
             setAllPanelsVisibleFalse();
             athletesHomePanel.Visible = true;
@@ -217,7 +218,8 @@ namespace TrackProject
             SqlConnection conn = new SqlConnection(ssConnectionString);
             conn.Open();
             SqlCommand command = conn.CreateCommand();
-            command.CommandText = "SELECT TOP 10 * FROM Record ORDER BY time DESC";
+            command.CommandText = "SELECT TOP 10 * FROM Record WHERE time != 0 AND event = @event ORDER BY time ASC";
+            command.Parameters.AddWithValue("@event", eventType);
             command.CommandType = CommandType.Text;
             command.Connection = conn;
             sqlReader = command.ExecuteReader();

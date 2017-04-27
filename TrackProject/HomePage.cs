@@ -136,6 +136,9 @@ namespace TrackProject
                 dynamicTabControl.Controls.Add(tempTabPage);
                 tempTabPage.Text = tabEvent;
                 //this is how to add things to the tab pages
+
+
+                //add something here to check for duplicates in events before adding
                 tempTabPage.Controls.Add(createAthleteEventChart(aId, tabEvent));
             }
         }
@@ -260,9 +263,9 @@ namespace TrackProject
                 int recCount = 0;
                 while (sqlReader.Read())
                 {
-                    string time = sqlReader.GetString(1);
+                    string time = Convert.ToString(sqlReader.GetDecimal(1));
                     eventAndTime[recCount, 0] = time;
-                    string distance = sqlReader.GetString(2);
+                    string distance = Convert.ToString(sqlReader.GetDecimal(2));
                     eventAndTime[recCount, 1] = distance;
                     int mId = sqlReader.GetInt32(4);
                     eventAndTime[recCount, 2] = "" + mId;

@@ -940,14 +940,15 @@ namespace TrackProject
 
         private void handleRecord(string time, string distance, int aId, int mId, int booleanIfFinals)
         {
-            decimal newTime = convertStringTimeToIntTime(time);
+            decimal newTime = convertStringTimeToDecimalTime(time);
+            decimal newDistance = convertStringDistanceToDecimalTime(distance);
             if (checkForDuplicateRecord(time, distance, aId, mId, booleanIfFinals) == 0)
             {
                 //adds a record which is connected to the Athlete
                 cmd = new SqlCommand("INSERT INTO Record (time, distance, aId, mId, place, event, finals) VALUES (@time, @distance, @aId, @mId, @place, @event, @finals)", con);
 
                 cmd.Parameters.AddWithValue("@time", newTime);
-                cmd.Parameters.AddWithValue("@distance", distance);
+                cmd.Parameters.AddWithValue("@distance", newDistance);
 
                 cmd.Parameters.AddWithValue("@aId", aId);
                 cmd.Parameters.AddWithValue("@mId", mId);
@@ -958,7 +959,7 @@ namespace TrackProject
             }
         }
 
-        private decimal convertStringTimeToIntTime(string time)
+        private decimal convertStringTimeToDecimalTime(string time)
         {
             decimal newTime = 0;
             char[] delimiters = new char[] { ':', '.' };
@@ -972,6 +973,22 @@ namespace TrackProject
                 newTime = Convert.ToDecimal(parts[0]) + (Convert.ToDecimal(parts[1]) / 100);
             }
             return newTime;         
+        }
+
+        private decimal convertStringDistanceToDecimalTime(string distance)
+        {
+            decimal newDistance = 0;
+            char[] delimeters = new char[] { '-', '.' };
+            string[] parts = distance.Split(delimeters, StringSplitOptions.RemoveEmptyEntries);
+            if(parts.Length == 3)
+            {
+                newDistance = Convert.ToDecimal(parts[0]) * 12 + Convert.ToDecimal(parts[1]) + Convert.ToDecimal(parts[2]) / 100;
+            }
+            else if(parts.Length == 2 && distance.Contains('-'))
+            {
+                newDistance = Convert.ToDecimal(parts[0]) * 12 + Convert.ToDecimal(parts[1]);
+            }
+            return newDistance;
         }
         private int handleMeet()
         {
