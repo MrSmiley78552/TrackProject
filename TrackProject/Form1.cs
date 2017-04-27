@@ -81,6 +81,7 @@ namespace TrackProject
                 //splits the page by each new line
                 linesOnPage = text.Split('\n');
 
+                dateOfMeet = "";
                 //cycles through each line in the page
                 for (int lineNumber = 0; lineNumber < 5; lineNumber++)
                 {
@@ -151,8 +152,8 @@ namespace TrackProject
                     //returns a single line of text
                     line = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(pageLines[lineNumber]));
 
-                    autoSetDateOfMeet(lineNumber, line, pageLines);
-                    autoSetNameOfMeet(lineNumber, line);
+                    //autoSetDateOfMeet(lineNumber, line, pageLines);
+                    //autoSetNameOfMeet(lineNumber, line);
 
                     //sets  trackOrFieldEvent  to the type in the line
                     if (!trackOrFieldEvent.Equals(autoSetEventType(line)))
