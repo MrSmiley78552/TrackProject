@@ -57,19 +57,16 @@ namespace TrackProject
 
         private void button1_Click(object sender, EventArgs e)
         {
-            PdfReader[] pdfArray = new PdfReader[8];
-            pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
-            pdfArray[1] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
-            pdfArray[2] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
-            pdfArray[3] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
-            pdfArray[4] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
-            pdfArray[5] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
-            pdfArray[6] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
-            pdfArray[7] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
-            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\Results - Full - 2017-03-31 EDC Indoor - Girls.pdf");
-            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\Results - Full - 2017-03-25 Fargo South v Fargo Davies JV Indoor - Girls-4.pdf");
-            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
-            //pdfArray[0] = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results\classaresults2-2.pdf");
+            //WebScrape myWS = new WebScrape();
+            string[] allPDFsInResults = Directory.GetFiles(@"C:\Users\Mitchell\Desktop\TrackProject\Results\");
+            //PdfReader[] pdfArray = new PdfReader[8];
+            List<PdfReader> pdfList = new List<PdfReader>();
+            foreach(var pdfFile in allPDFsInResults)
+            {
+                PdfReader temp = new PdfReader(@"" + pdfFile);
+                pdfList.Add(temp);
+            }
+            PdfReader[] pdfArray = pdfList.ToArray();
 
             foreach (var reader in pdfArray)
             {
@@ -77,15 +74,6 @@ namespace TrackProject
                 con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True");
                 con.Open();
 
-                //sets up the pdfreader
-                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-15 Fargo South Alumni Invite - Varsity - Girls.pdf");
-                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2016-04-08 EDC Indoor - Girls.pdf");
-                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\State_results.pdf");
-                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Fargo Rotary - Girls.pdf");
-                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\2015 EDC Results Girls.pdf");
-                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Shanley Invite - Girls.pdf");
-                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\Results - Full - 2017-03-17 Fargo South Indoor Invite - Girls.pdf");
-                //PdfReader reader = new PdfReader(@"C:\Users\Mitchell\Desktop\TrackProject\UofMaryin17.pdf");
                 numberOfPages = reader.NumberOfPages;
                 string text = PdfTextExtractor.GetTextFromPage(reader, 1, new LocationTextExtractionStrategy());
                 string[] linesOnPage;
@@ -98,10 +86,6 @@ namespace TrackProject
                 {
                     //returns a single line of text
                     line = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(linesOnPage[lineNumber]));
-
-                    //----------------------------------------------------------------------------------------
-                    //want to put majority of code here
-                    //----------------------------------------------------------------------------------------
 
                     autoSetDateOfMeet(lineNumber, line, linesOnPage);
                     autoSetNameOfMeet(lineNumber, line);
@@ -167,17 +151,8 @@ namespace TrackProject
                     //returns a single line of text
                     line = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(pageLines[lineNumber]));
 
-
-
-
-                    //----------------------------------------------------------------------------------------
-                    //want to put majority of code here
-                    //----------------------------------------------------------------------------------------
-
                     autoSetDateOfMeet(lineNumber, line, pageLines);
                     autoSetNameOfMeet(lineNumber, line);
-
-
 
                     //sets  trackOrFieldEvent  to the type in the line
                     if (!trackOrFieldEvent.Equals(autoSetEventType(line)))
@@ -304,7 +279,7 @@ namespace TrackProject
                     dateOfMeet = mat3.ToString();
                 }
 
-                if (j > 3)
+                if (j > 3 && dateOfMeet.Equals(""))
                 {
                     string headerLine = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(words[0]));
 

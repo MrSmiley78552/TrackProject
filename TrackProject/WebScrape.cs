@@ -1,39 +1,82 @@
-﻿using System;
+﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Download;
+using Google.Apis.Drive.v2;
+using Google.Apis.Drive.v2.Data;
+using Google.Apis.Services;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using System;
+using Google.Apis.Drive.v2;
+using Google.Apis.Auth.OAuth2;
+using System.Threading;
+using Google.Apis.Util.Store;
+using Google.Apis.Services;
+using Google.Apis.Drive.v2.Data;
+using System.Collections.Generic;
 
 namespace TrackProject
 {
     class WebScrape
     {
-        private static string[] urls = { "http://demonstf.webs.com/results" };
+        private static string[] urls = { "https://sites.google.com/a/fargoschools.org/girlstrack/meet-results",
+        };
+
+        public object DaimtoGoogleDriveHelper { get; private set; }
 
         public WebScrape()
         {
             List<string> allPDF_Urls = new List<string>();
-            string[] urls = getAllWebsites();
-            //get files of all the websites
+            allPDF_Urls = getAllWebsites(allPDF_Urls);
+
+            //------------------------------------------------------------------
+            //string[] scopes = new string[] { DriveService.Scope.Drive };
+            // Full access 
+            //var keyFilePath = @"C:\Users\Mitchell\Desktop\TrackProject\file.p12"; // Downloaded from https://console.developers.google.com 
+            //var serviceAccountEmail = "xx@developer.gserviceaccount.com"; // found https://console.developers.google.com 
+            //loading the Key file 
+            //var certificate = new X509Certificate2(keyFilePath, "notasecret", X509KeyStorageFlags.Exportable);
+            //var credential = new ServiceAccountCredential(new ServiceAccountCredential.Initializer(serviceAccountEmail) { Scopes = scopes }.FromCertificate(certificate));
+
+            //var service = new DriveService(new BaseClientService.Initializer() { HttpClientInitializer = credential, ApplicationName = "Drive API Sample", });
+
+            //var services = new DriveService(new BaseClientService.Initializer()
+            //{
+            //    ApiKey = "[API key]", // from https://console.developers.google.com (Public API access) 
+            //    ApplicationName = "Drive API Sample",
+            //});
+
+            //FilesResource.ListRequest request = service.Files.List();
+            //FileList files = request.Execute();
+
+
+            //var stream = services.HttpClient.GetStreamAsync("https://docs.google.com/viewer?a=v&pid=sites&srcid=ZmFyZ29zY2hvb2xzLm9yZ3xnaXJsc3RyYWNrfGd4OjNjN2NkYmM3MDc2MDIwMDM");
+            //var result = stream.Result;
+            //using (var fileStream = System.IO.File.Create(@"C:\Users\Mitchell\Desktop\TrackProject\Results\" + "test.pdf"))
+            //{
+            //    result.CopyTo(fileStream);
+            //}
+            //------------------------------------------------------------------
+            //puts all the pdf's into the Results folder
             int i = 1;
-            foreach(var url in urls)
+            foreach(var pdfUrl in allPDF_Urls)
             {
-                //gets the website and stores it in a .txt file
-                string fileName = "website" + i + ".txt";
-                string txtFilePath = @"C:\Users\Mitchell\Desktop\TrackProject\HS_WebSites\" + fileName;
                 WebClient myWC = new WebClient();
-                myWC.DownloadFile(url, txtFilePath);
+                myWC.DownloadFile(pdfUrl, @"C:\Users\Mitchell\Desktop\TrackProject\Results\" + "testResults" + i + ".pdf");
                 myWC.Dispose();
                 i++;
-
-                //searches through the .txt file for .pdf documents and puts them all into the list
-                allPDF_Urls.AddRange(getPDFsFromWebSite(txtFilePath));
             }
         }
 
         //does what it says
-        private List<string> getPDFsFromWebSite(string txtFilePath)
+        private List<string> getPDFsFromWebSiteTXT(string txtFilePath)
         {
             //now we have a list of lines that contain ".pdf"
             string[] pdfLineList = getLinesFromTxtContainingPDF(txtFilePath);
@@ -81,9 +124,25 @@ namespace TrackProject
             }
             return pdfLineList.ToArray();
         }
-        private static string[] getAllWebsites()
+
+        private List<string> getAllWebsites(List<string> allPDF_Urls)
         {
-            return urls;
+            int i = 1;
+            foreach (var url in urls)
+            {
+                //gets the website and stores it in a .txt file
+                string fileName = "website" + i + ".txt";
+                string txtFilePath = @"C:\Users\Mitchell\Desktop\TrackProject\HS_WebSites\" + fileName;
+                WebClient myWC = new WebClient();
+                myWC.DownloadFile(url, txtFilePath);
+                myWC.Dispose();
+                i++;
+
+                //searches through the .txt file for .pdf documents and puts them all into the list
+                allPDF_Urls.AddRange(getPDFsFromWebSiteTXT(txtFilePath));
+            }
+
+            return allPDF_Urls;
         }
 
         private static void addWebsite(string newWebsite)
