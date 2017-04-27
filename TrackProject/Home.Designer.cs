@@ -28,10 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.homeLabel = new System.Windows.Forms.LinkLabel();
             this.goldenEagleAwardWinnersLink = new System.Windows.Forms.LinkLabel();
             this.stateQualifierListLink = new System.Windows.Forms.LinkLabel();
@@ -74,9 +70,8 @@
             this.homePageLabel = new System.Windows.Forms.Label();
             this.athletesButton = new System.Windows.Forms.Button();
             this.athletesHomePanel = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.athletesListView = new System.Windows.Forms.ListView();
+            this.button1 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.goldenEagleAwardWinnersPanel.SuspendLayout();
             this.stateQualifierListPanel.SuspendLayout();
@@ -92,8 +87,6 @@
             this.archivedSeasonsPanel.SuspendLayout();
             this.homePanel.SuspendLayout();
             this.athletesHomePanel.SuspendLayout();
-            this.panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
             // 
             // homeLabel
@@ -585,40 +578,11 @@
             // 
             // athletesHomePanel
             // 
-            this.athletesHomePanel.Controls.Add(this.panel2);
             this.athletesHomePanel.Controls.Add(this.athletesListView);
             this.athletesHomePanel.Location = new System.Drawing.Point(138, 36);
             this.athletesHomePanel.Name = "athletesHomePanel";
             this.athletesHomePanel.Size = new System.Drawing.Size(515, 439);
             this.athletesHomePanel.TabIndex = 1;
-            // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.chart1);
-            this.panel2.Location = new System.Drawing.Point(86, 40);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(456, 344);
-            this.panel2.TabIndex = 1;
-            // 
-            // chart1
-            // 
-            chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.chart1.Legends.Add(legend1);
-            this.chart1.Location = new System.Drawing.Point(53, 44);
-            this.chart1.Name = "chart1";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Point;
-            series1.Legend = "Legend1";
-            series1.Name = "results";
-            this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(300, 300);
-            this.chart1.TabIndex = 0;
-            this.chart1.Text = "resultsChart";
-            title1.Name = "ResultsChart";
-            title1.Text = "Results Chart";
-            this.chart1.Titles.Add(title1);
             // 
             // athletesListView
             // 
@@ -635,9 +599,20 @@
             this.athletesListView.View = System.Windows.Forms.View.List;
             this.athletesListView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.athletesListView_MouseClick);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(383, 13);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 17;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // Home
             // 
             this.ClientSize = new System.Drawing.Size(661, 478);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.athletesHomePanel);
             this.Controls.Add(this.athletesButton);
             this.Controls.Add(this.homePanel);
@@ -684,8 +659,6 @@
             this.homePanel.ResumeLayout(false);
             this.homePanel.PerformLayout();
             this.athletesHomePanel.ResumeLayout(false);
-            this.panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -736,7 +709,6 @@
         private System.Windows.Forms.Button athletesButton;
         private System.Windows.Forms.Panel athletesHomePanel;
         private System.Windows.Forms.ListView athletesListView;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.Button button1;
     }
 }

@@ -152,24 +152,24 @@ namespace TrackProject
             command.CommandType = CommandType.Text;
             command.Connection = conn;
             sqlReader = command.ExecuteReader();
-            if (sqlReader.HasRows)
-            {
-                int i = 0;
-                while (sqlReader.Read())
-                {
-                    //0 = rId, 1 = time, 2 = distance, 3 = mId, 4 = place, 5 = trackEvent, 6 = finals
-                    var test = double.Parse(sqlReader.GetString(1));
-                    chart1.Series["results"].Points.AddXY(i, test);
-                    results[i, 0] = "" + sqlReader.GetInt32(0);
-                    results[i, 1] = sqlReader.GetString(1);
-                    results[i, 2] = sqlReader.GetString(2);
-                    results[i, 3] = "" + sqlReader.GetInt32(4);
-                    results[i, 4] = "" + sqlReader.GetInt32(5);
-                    results[i, 5] = sqlReader.GetString(6);
-                    results[i, 6] = "" + sqlReader.GetInt32(7);
-                    i++;
-                }
-            }
+            //if (sqlReader.HasRows)
+            //{
+            //    int i = 0;
+            //    while (sqlReader.Read())
+            //    {
+            //        //0 = rId, 1 = time, 2 = distance, 3 = mId, 4 = place, 5 = trackEvent, 6 = finals
+            //        var test = double.Parse(sqlReader.GetString(1));
+            //        chart1.Series["results"].Points.AddXY(i, test);
+            //        results[i, 0] = "" + sqlReader.GetInt32(0);
+            //        results[i, 1] = sqlReader.GetString(1);
+            //        results[i, 2] = sqlReader.GetString(2);
+            //        results[i, 3] = "" + sqlReader.GetInt32(4);
+            //        results[i, 4] = "" + sqlReader.GetInt32(5);
+            //        results[i, 5] = sqlReader.GetString(6);
+            //        results[i, 6] = "" + sqlReader.GetInt32(7);
+            //        i++;
+            //    }
+            //}
             sqlReader.Close();
             conn.Close();
             //--------------------------------------------------------
@@ -206,6 +206,32 @@ namespace TrackProject
                 return -1;
             }
             return -1;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            SqlDataReader sqlReader;
+            setAllPanelsVisibleFalse();
+            athletesHomePanel.Visible = true;
+            string ssConnectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\Mitchell\Desktop\TrackProject\TrackProject\TrackProject\TrackAthleteRecords.mdf;Integrated Security=True";
+            SqlConnection conn = new SqlConnection(ssConnectionString);
+            conn.Open();
+            SqlCommand command = conn.CreateCommand();
+            command.CommandText = "SELECT TOP 10 * FROM Record ORDER BY aId DESC";
+            command.CommandType = CommandType.Text;
+            command.Connection = conn;
+            sqlReader = command.ExecuteReader();
+            if (sqlReader.HasRows)
+            {
+                while (sqlReader.Read())
+                {
+                    var listViewItem = new ListViewItem(Convert.ToString(sqlReader.GetInt32(3)));
+                    athletesListView.Items.Add(listViewItem);
+                }
+                sqlReader.Close();
+            }
+            sqlReader.Close();
+            conn.Close();
         }
     }
 }

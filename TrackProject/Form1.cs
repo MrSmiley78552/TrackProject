@@ -1109,9 +1109,9 @@ namespace TrackProject
 
         private void button5_Click(object sender, EventArgs e)
         {
-            WebScrape testScraper = new WebScrape();
-            //HomePage homePageForm = new HomePage();
-            //homePageForm.Show();
+            //WebScrape testScraper = new WebScrape();
+            HomePage homePageForm = new HomePage();
+            homePageForm.Show();
         }
 
         private void Form1_Load(object sender, EventArgs e)
