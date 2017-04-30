@@ -162,13 +162,11 @@ namespace TrackProject
                 int i = 0;
                 while (sqlReader.Read())
                 {
-                    for(int curEvent = 0; curEvent < events.Length; curEvent++)
+                    if(!events.Contains(sqlReader.GetString(6)))
                     {
-                        if (events[curEvent] != null && events[curEvent].Equals(sqlReader.GetString(6)))
-                            break;
+                        events[i] = "" + sqlReader.GetString(6);
+                        i++;
                     }
-                    events[i] = "" + sqlReader.GetString(6);
-                    i++;
                 }
             }
             sqlReader.Close();
