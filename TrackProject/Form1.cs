@@ -57,7 +57,7 @@ namespace TrackProject
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //WebScrape myWS = new WebScrape();
+            WebScrape myWS = new WebScrape();
             string[] allPDFsInResults = Directory.GetFiles(@"C:\Users\Mitchell\Desktop\TrackProject\Results\");
             //PdfReader[] pdfArray = new PdfReader[8];
             List<PdfReader> pdfList = new List<PdfReader>();
@@ -1143,7 +1143,7 @@ namespace TrackProject
 
         private void button5_Click(object sender, EventArgs e)
         {
-            //WebScrape testScraper = new WebScrape();
+            WebScrape testScraper = new WebScrape();
             HomePage homePageForm = new HomePage();
             homePageForm.Show();
         }

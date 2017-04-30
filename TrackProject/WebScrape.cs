@@ -29,50 +29,25 @@ namespace TrackProject
         private static string[] urls = { "https://sites.google.com/a/fargoschools.org/girlstrack/meet-results",
         };
 
-        public object DaimtoGoogleDriveHelper { get; private set; }
 
         public WebScrape()
         {
             List<string> allPDF_Urls = new List<string>();
             allPDF_Urls = getAllWebsites(allPDF_Urls);
-
-            //------------------------------------------------------------------
-            //string[] scopes = new string[] { DriveService.Scope.Drive };
-            // Full access 
-            //var keyFilePath = @"C:\Users\Mitchell\Desktop\TrackProject\file.p12"; // Downloaded from https://console.developers.google.com 
-            //var serviceAccountEmail = "xx@developer.gserviceaccount.com"; // found https://console.developers.google.com 
-            //loading the Key file 
-            //var certificate = new X509Certificate2(keyFilePath, "notasecret", X509KeyStorageFlags.Exportable);
-            //var credential = new ServiceAccountCredential(new ServiceAccountCredential.Initializer(serviceAccountEmail) { Scopes = scopes }.FromCertificate(certificate));
-
-            //var service = new DriveService(new BaseClientService.Initializer() { HttpClientInitializer = credential, ApplicationName = "Drive API Sample", });
-
-            //var services = new DriveService(new BaseClientService.Initializer()
-            //{
-            //    ApiKey = "[API key]", // from https://console.developers.google.com (Public API access) 
-            //    ApplicationName = "Drive API Sample",
-            //});
-
-            //FilesResource.ListRequest request = service.Files.List();
-            //FileList files = request.Execute();
-
-
-            //var stream = services.HttpClient.GetStreamAsync("https://docs.google.com/viewer?a=v&pid=sites&srcid=ZmFyZ29zY2hvb2xzLm9yZ3xnaXJsc3RyYWNrfGd4OjNjN2NkYmM3MDc2MDIwMDM");
-            //var result = stream.Result;
-            //using (var fileStream = System.IO.File.Create(@"C:\Users\Mitchell\Desktop\TrackProject\Results\" + "test.pdf"))
-            //{
-            //    result.CopyTo(fileStream);
-            //}
-            //------------------------------------------------------------------
+            string[] fargoDaviesPDF_Urls = getPDF_UrlsFromFargoDavies("https://sites.google.com/a/fargoschools.org/girlstrack/meet-results");
+            //not working
+            //string[] test = getPDF_UrlsFromLegacy("http://bpssabers.wixsite.com/lh-track-and-field/blank");
+            string[] bismarckHighPDF_Urls = getPDF_UrlsFromBismarckHigh("http://demonstf.webs.com/results");
+            string[] combined = fargoDaviesPDF_Urls.Concat(bismarckHighPDF_Urls).ToArray();
             //puts all the pdf's into the Results folder
             int i = 1;
-            foreach(var pdfUrl in allPDF_Urls)
+            WebClient myWC = new WebClient();
+            foreach (var pdfUrl in combined)
             {
-                WebClient myWC = new WebClient();
                 myWC.DownloadFile(pdfUrl, @"C:\Users\Mitchell\Desktop\TrackProject\Results\" + "testResults" + i + ".pdf");
-                myWC.Dispose();
                 i++;
             }
+            myWC.Dispose();
         }
 
         //does what it says
@@ -110,6 +85,7 @@ namespace TrackProject
         {
             return pdfUrl.Replace("amp;", "");
         }
+
         //searches through the txtFile for any lines containing ".pdf" then returns a List of those lines.
         private string[] getLinesFromTxtContainingPDF(string txtFilePath)
         {
@@ -145,6 +121,74 @@ namespace TrackProject
             return allPDF_Urls;
         }
 
+        private string[] getPDF_UrlsFromBismarckHigh(string bismarckHighPageURL)
+        {
+            string fileName = "website_BismarckHigh.txt";
+            string txtFilePath = @"C:\Users\Mitchell\Desktop\TrackProject\HS_WebSites\" + fileName;
+            WebClient myWC = new WebClient();
+            myWC.DownloadFile(bismarckHighPageURL, txtFilePath);
+            myWC.Dispose();
+            string[] possiblePDF_Links = getLinesFromTxtContainingPDF(txtFilePath);
+            List<string> pdfs = new List<string>();
+            foreach (var possiblePDF in possiblePDF_Links)
+            {
+                pdfs.AddRange(getPDF_Urls(possiblePDF));
+            }
+            return pdfs.ToArray();
+        }
+
+        //not working
+        private string[] getPDF_UrlsFromLegacy(string legacyPageURL)
+        {
+            string fileName = "website_Legacy.txt";
+            string txtFilePath = @"C:\Users\Mitchell\Desktop\TrackProject\HS_WebSites\" + fileName;
+            WebClient myWC = new WebClient();
+            string text = myWC.DownloadString(legacyPageURL);
+            myWC.Dispose();
+
+            string[] possiblePDF_Links = getLinesFromTxtContainingPDF(txtFilePath);
+            List<string> pdfs = new List<string>();
+            foreach(var possiblePDF in possiblePDF_Links)
+            {
+                pdfs.Concat(getPDF_Urls(possiblePDF));
+            }
+            return pdfs.ToArray();
+        }
+
+        //WORKING
+        private string[] getPDF_UrlsFromFargoDavies(string fargoDaviesPageURL)
+        {
+            string fileName = "website_FargoDavies.txt";
+            string txtFilePath = @"C:\Users\Mitchell\Desktop\TrackProject\HS_WebSites\" + fileName;
+            WebClient myWC = new WebClient();
+            myWC.DownloadFile(fargoDaviesPageURL, txtFilePath);
+            myWC.Dispose();
+
+            //gets rid of the view links and leaves us with the part of the line containing the download link.
+            string[] possiblePDF_Links = getLinesFromTxtContainingPDF(txtFilePath);
+            for(int i = 0; i < possiblePDF_Links.Length; i++)
+            {
+                if(possiblePDF_Links[i].Contains("View</a>"))
+                    possiblePDF_Links[i] = possiblePDF_Links[i].Substring(possiblePDF_Links[i].IndexOf("View</a>"));
+            }
+
+            List<string> pdfUrls = new List<string>();
+            for(int i = 0; i < possiblePDF_Links.Length; i++)
+            {
+                string line = possiblePDF_Links[i];
+                if(line.IndexOf("/a/fargoschools.org/") != -1)
+                {
+                    int indexOfStart = line.IndexOf("/a/fargoschools.org/");
+                    line = line.Substring(indexOfStart);
+                    indexOfStart = line.IndexOf("/a/fargoschools.org/");
+                    int indexOfQUOTES = line.IndexOf("\"");
+                    line = stripOfAMP(line.Substring(indexOfStart, indexOfQUOTES - indexOfStart));
+                    pdfUrls.Add("https://sites.google.com" + line);
+                }
+            }
+
+            return pdfUrls.ToArray();
+        }
         private static void addWebsite(string newWebsite)
         {
 
